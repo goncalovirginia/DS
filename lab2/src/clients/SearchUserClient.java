@@ -38,10 +38,9 @@ public class SearchUserClient {
 				.get();
 		
 		if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-			var users = r.readEntity(new GenericType<List<User>>() {
-			});
+			var users = r.readEntity(new GenericType<List<User>>() {});
 			System.out.println("Success: (" + users.size() + " users)");
-			users.stream().forEach(u -> System.out.println(u));
+			users.forEach(System.out::println);
 		}
 		else
 			System.out.println("Error, HTTP error status: " + r.getStatus());
