@@ -1,3 +1,5 @@
+package discovery;
+
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
