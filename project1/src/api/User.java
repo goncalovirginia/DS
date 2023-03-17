@@ -14,10 +14,11 @@ public class User {
 	public User() {
 	}
 	
-	public User(String name, String pwd, String domain) {
+	public User(String name, String pwd, String displayName, String domain) {
+		super();
 		this.name = name;
 		this.pwd = pwd;
-		this.displayName = null;
+		this.displayName = displayName;
 		this.domain = domain;
 	}
 	
