@@ -7,8 +7,8 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
 
-@Path(FeedsService.PATH)
-public interface FeedsService {
+@Path(RestFeeds.PATH)
+public interface RestFeeds {
 	
 	String PATH = "/feeds";
 	
@@ -28,7 +28,7 @@ public interface FeedsService {
 	@Path("/{user}@{domain}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	long postMessage(@PathParam("user") String user, @QueryParam("pwd") String pwd, Message msg);
+	long postMessage(@PathParam("user") String user, @PathParam("domain") String domain, @QueryParam("pwd") String pwd, Message msg);
 	
 	/**
 	 * Removes the message identified by mid from the feed of user.

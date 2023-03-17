@@ -6,8 +6,8 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
 
-@Path(UsersService.PATH)
-public interface UsersService {
+@Path(RestUsers.PATH)
+public interface RestUsers {
 	
 	String PATH = "/users";
 	

@@ -1,8 +1,8 @@
-package server.resources;
+package servers.resources;
 
+import api.Result;
 import api.User;
-import api.rest.UsersService;
-import jakarta.inject.Singleton;
+import api.Users;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 
@@ -12,33 +12,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-@Singleton
-public class UsersResource implements UsersService {
+public class UsersResource implements Users {
 	
 	private static final Logger Log = Logger.getLogger(UsersResource.class.getName());
 	
-	private static final Map<String, User> users = new HashMap<>();
+	private final Map<String, User> users;
 	
 	public UsersResource() {
-	
+		users = new HashMap<>();
 	}
 	
 	@Override
-	public String postUser(User user) {
-		Log.info("createUser : " + user);
+	public Result<String> postUser(User user) {
+		Log.info("postUser : " + user);
 		
-		validateUserObject(user);
+		Result<Void> r1 = validateUserObject(user);
+		if (!r1.isOK()) return Result.error(r1.error());
 		
 		if (users.putIfAbsent(user.getName(), user) != null) {
 			Log.info("User already exists.");
-			throw new WebApplicationException(Status.CONFLICT);
+			return Result.error(Result.ErrorCode.CONFLICT);
 		}
 		
-		return user.getName();
+		return Result.ok(user.getName());
 	}
 	
 	@Override
-	public User getUser(String name, String pwd) {
+	public Result<User> getUser(String name, String pwd) {
 		Log.info("getUser : user = " + name + "; pwd = " + pwd);
 		
 		return validateUserCredentials(name, pwd);
@@ -46,29 +46,33 @@ public class UsersResource implements UsersService {
 	
 	
 	@Override
-	public User updateUser(String name, String pwd, User user) {
+	public Result<User> updateUser(String name, String pwd, User user) {
 		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
 		
-		validateUserCredentials(name, pwd);
-		validateUserObject(user);
+		Result<User> r1 = validateUserCredentials(name, pwd);
+		if (!r1.isOK()) return r1;
 		
-		users.put(name, user);
+		r1.value().setNonNullAttributes(user);
 		
-		return user;
+		return r1;
 	}
 	
 	
 	@Override
-	public User deleteUser(String name, String pwd) {
+	public Result<User> deleteUser(String name, String pwd) {
 		Log.info("deleteUser : user = " + name + "; pwd = " + pwd);
 		
-		validateUserCredentials(name, pwd);
-		return users.remove(name);
+		Result<User> r1 = validateUserCredentials(name, pwd);
+		if (!r1.isOK()) return r1;
+		
+		users.remove(name);
+		
+		return r1;
 	}
 	
 	
 	@Override
-	public List<User> searchUsers(String pattern) {
+	public Result<List<User>> searchUsers(String pattern) {
 		Log.info("searchUsers : pattern = " + pattern);
 		
 		List<User> matches = new LinkedList<>();
@@ -81,35 +85,36 @@ public class UsersResource implements UsersService {
 			}
 		}
 		
-		return matches;
+		return Result.ok(matches);
 	}
 	
-	private void validateUserObject(User user) {
+	private Result<Void> validateUserObject(User user) {
 		if (user.getName() == null || user.getPwd() == null || user.getDisplayName() == null || user.getDomain() == null) {
 			Log.info("Invalid user.");
-			throw new WebApplicationException(Status.BAD_REQUEST);
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
 		}
+		return Result.ok();
 	}
 	
-	private User validateUserCredentials(String userId, String password) {
+	private Result<User> validateUserCredentials(String userId, String password) {
 		if (userId == null || password == null) {
 			Log.info("UserId or password null.");
-			throw new WebApplicationException(Status.BAD_REQUEST);
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
 		}
 		
 		User user = users.get(userId);
 		
 		if (user == null) {
 			Log.info("User does not exist.");
-			throw new WebApplicationException(Status.NOT_FOUND);
+			return Result.error(Result.ErrorCode.NOT_FOUND);
 		}
 		
 		if (!user.getPwd().equals(password)) {
 			Log.info("Password is incorrect.");
-			throw new WebApplicationException(Status.FORBIDDEN);
+			return Result.error(Result.ErrorCode.FORBIDDEN);
 		}
 		
-		return user;
+		return Result.ok(user);
 	}
 	
 }

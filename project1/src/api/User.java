@@ -61,6 +61,12 @@ public class User {
 		this.domain = domain;
 	}
 	
+	public void setNonNullAttributes(User user) {
+		if (user.getPwd() != null) pwd = user.getPwd();
+		if (user.getDomain() != null) domain = user.getDomain();
+		if (user.getDisplayName() != null) displayName = user.getDisplayName();
+	}
+	
 	@Override
 	public String toString() {
 		return "User [name=" + name + ", pwd=" + pwd + ", displayName=" + displayName + ", domain=" + domain + "]";

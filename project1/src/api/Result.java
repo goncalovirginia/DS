@@ -1,0 +1,103 @@
+package api;
+
+/**
+ * Represents the result of an operation, either wrapping a result of the given type,
+ * or an error.
+ * @param <T> type of the result value associated with success
+ * @author smd
+ */
+public interface Result<T> {
+	
+	/**
+	 * @author smd
+	 * Service errors:
+	 * OK - no error, implies a non-null result of type T, except for Void operations
+	 * CONFLICT - something is being created but already exists
+	 * NOT_FOUND - tried accessing something that does not exist
+	 * INTERNAL_ERROR - something unexpected happened
+	 */
+	enum ErrorCode {OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_ERROR, NOT_IMPLEMENTED}
+	
+	/**
+	 * Tests if the result is an error.
+	 */
+	boolean isOK();
+	
+	/**
+	 * obtains the payload value of this result
+	 * @return the value of this result.
+	 */
+	T value();
+	
+	/**
+	 * obtains the error code of this result
+	 * @return the error code
+	 */
+	ErrorCode error();
+	
+	/**
+	 * Convenience method for returning non error results of the given type
+	 * @param result Class of value of the result
+	 * @return the value of the result
+	 */
+	static <T> Result<T> ok(T result) {
+		return new OkResult<>(result);
+	}
+	
+	/**
+	 * Convenience method for returning non error results without a value
+	 * @return non-error result
+	 */
+	static <T> OkResult<T> ok() {
+		return new OkResult<>(null);
+	}
+	
+	/**
+	 * Convenience method used to return an error
+	 * @return
+	 */
+	static <T> ErrorResult<T> error(ErrorCode error) {
+		return new ErrorResult<>(error);
+	}
+	
+}
+
+record OkResult<T>(T result) implements Result<T> {
+	
+	@Override
+	public boolean isOK() {
+		return true;
+	}
+	
+	@Override
+	public T value() {
+		return result;
+	}
+	
+	@Override
+	public ErrorCode error() {
+		return ErrorCode.OK;
+	}
+	
+	public String toString() {
+		return "(OK, " + value() + ")";
+	}
+}
+
+record ErrorResult<T>(ErrorCode error) implements Result<T> {
+	
+	@Override
+	public boolean isOK() {
+		return false;
+	}
+	
+	@Override
+	public T value() {
+		throw new RuntimeException("Attempting to extract the value of an Error: " + error());
+	}
+	
+	
+	public String toString() {
+		return "(" + error() + ")";
+	}
+}

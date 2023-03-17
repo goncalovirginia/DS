@@ -1,8 +1,8 @@
-package server.resources;
+package servers.resources;
 
 import api.Message;
 import api.User;
-import api.rest.FeedsService;
+import api.rest.RestFeeds;
 import jakarta.inject.Singleton;
 
 import java.util.HashMap;
@@ -10,19 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-@Singleton
-public class FeedsResource implements FeedsService {
+public class FeedsResource implements Feeds {
 	
 	private static final Logger Log = Logger.getLogger(UsersResource.class.getName());
 	
-	private static final Map<String, User> feeds = new HashMap<>();
+	private final Map<String, User> feeds;
 	
 	public FeedsResource() {
-	
+		feeds = new HashMap<>();
 	}
 	
 	@Override
-	public long postMessage(String user, String pwd, Message msg) {
+	public long postMessage(String user, String domain, String pwd, Message msg) {
 		return 0;
 	}
 	
