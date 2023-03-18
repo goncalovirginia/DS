@@ -3,7 +3,6 @@ package clients.soap;
 import api.Result;
 import api.User;
 import api.Users;
-import clients.soap.SoapClient;
 import jakarta.xml.ws.Service;
 
 import javax.xml.namespace.QName;

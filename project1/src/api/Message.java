@@ -11,12 +11,25 @@ public class Message {
 	private long creationTime;
 	private String text;
 	
+	public Message() {
+	}
+	
 	public Message(long id, String user, String domain, String text) {
+		super();
 		this.id = id;
 		this.user = user;
 		this.domain = domain;
 		this.creationTime = System.currentTimeMillis();
 		this.text = text;
+	}
+	
+	public Message(Message message) {
+		super();
+		this.id = System.currentTimeMillis();
+		this.user = message.getUser();
+		this.domain = message.getDomain();
+		this.creationTime = System.currentTimeMillis();
+		this.text = message.getText();
 	}
 	
 	public long getId() {

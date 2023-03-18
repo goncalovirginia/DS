@@ -11,7 +11,7 @@ public interface Users {
 	 * 409 if the user id already exists.
 	 * 400 otherwise.
 	 */
-	Result<String> postUser(User user);
+	Result<String> createUser(User user);
 	
 	/**
 	 * Obtains the information on the user identified by name.
@@ -22,7 +22,7 @@ public interface Users {
 	 * 403 if the password is incorrect
 	 * 404 if no user exists with the provided userId
 	 */
-	Result<User> getUser(String userId, String password);
+	Result<User> getUser(String name, String pwd);
 	
 	/**
 	 * Modifies the information of a user. Values of null in any field of the user will be
@@ -36,7 +36,7 @@ public interface Users {
 	 * 404 if no user exists with the provided userId
 	 * 400 otherwise.
 	 */
-	Result<User> updateUser(String userId, String password, User user);
+	Result<User> updateUser(String name, String pwd, User user);
 	
 	/**
 	 * Deletes the user identified by userId. The users owned by the user should be eventually removed (asynchronous
@@ -48,7 +48,7 @@ public interface Users {
 	 * 403 if the password is incorrect
 	 * 404 if no user exists with the provided userId
 	 */
-	Result<User> deleteUser(String userId, String password);
+	Result<User> deleteUser(String name, String pwd);
 	
 	/**
 	 * Returns the list of users for which the pattern is a substring of the name (of the user), case-insensitive.

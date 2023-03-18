@@ -11,45 +11,45 @@ import java.util.List;
 @Singleton
 public class FeedsRestResource implements RestFeeds {
 	
-	private final Feeds feeds;
+	private final FeedsResource feeds;
 	
 	public FeedsRestResource() {
 		feeds = new FeedsResource();
 	}
 	
 	@Override
-	public long postMessage(String user, String domain, String pwd, Message msg) {
-		return 0;
+	public long postMessage(String user, String pwd, Message msg) {
+		return RestResource.processResult(feeds.postMessage(user, pwd, msg));
 	}
 	
 	@Override
 	public void removeFromPersonalFeed(String user, long mid, String pwd) {
-	
+		RestResource.processResult(feeds.removeFromPersonalFeed(user, mid, pwd));
 	}
 	
 	@Override
 	public Message getMessage(String user, long mid) {
-		return null;
+		return RestResource.processResult(feeds.getMessage(user, mid));
 	}
 	
 	@Override
 	public List<Message> getMessages(String user, long time) {
-		return null;
+		return RestResource.processResult(feeds.getMessages(user, time));
 	}
 	
 	@Override
-	public void subUser(String user, long userSub, String pwd) {
-	
+	public void subUser(String user, String userSub, String pwd) {
+		RestResource.processResult(feeds.subUser(user, userSub, pwd));
 	}
 	
 	@Override
 	public void unsubscribeUser(String user, String userSub, String pwd) {
-	
+		RestResource.processResult(feeds.unsubscribeUser(user, userSub, pwd));
 	}
 	
 	@Override
 	public List<User> listSubs(String user) {
-		return null;
+		return RestResource.processResult(feeds.listSubs(user));
 	}
 	
 }

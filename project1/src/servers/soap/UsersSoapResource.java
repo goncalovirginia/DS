@@ -1,11 +1,11 @@
 package servers.soap;
 
 
-import api.Users;
-import jakarta.jws.WebService;
 import api.User;
+import api.Users;
 import api.service.soap.SoapUsers;
 import api.service.soap.UsersException;
+import jakarta.jws.WebService;
 import servers.resources.UsersResource;
 
 import java.util.List;

@@ -3,13 +3,11 @@ package servers.resources;
 import api.Result;
 import api.User;
 import api.Users;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response.Status;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class UsersResource implements Users {
@@ -19,11 +17,11 @@ public class UsersResource implements Users {
 	private final Map<String, User> users;
 	
 	public UsersResource() {
-		users = new HashMap<>();
+		users = new ConcurrentHashMap<>();
 	}
 	
 	@Override
-	public Result<String> postUser(User user) {
+	public Result<String> createUser(User user) {
 		Log.info("postUser : " + user);
 		
 		Result<Void> r1 = validateUserObject(user);
@@ -43,7 +41,6 @@ public class UsersResource implements Users {
 		
 		return validateUserCredentials(name, pwd);
 	}
-	
 	
 	@Override
 	public Result<User> updateUser(String name, String pwd, User user) {

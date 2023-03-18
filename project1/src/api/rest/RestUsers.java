@@ -9,6 +9,9 @@ import java.util.List;
 @Path(RestUsers.PATH)
 public interface RestUsers {
 	
+	String PWD = "pwd";
+	String NAME = "name";
+	String QUERY = "query";
 	String PATH = "/users";
 	
 	/**
@@ -19,10 +22,9 @@ public interface RestUsers {
 	 * 400 otherwise.
 	 */
 	@POST
-	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	String postUser(User user);
+	String createUser(User user);
 	
 	/**
 	 * Obtains the information on the user identified by name
@@ -34,13 +36,13 @@ public interface RestUsers {
 	 * 404 if no user exists with the provided userId
 	 */
 	@GET
-	@Path("/{name}")
+	@Path("/{" + NAME + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	User getUser(@PathParam("name") String name, @QueryParam("pwd") String pwd);
+	User getUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd);
 	
 	/**
 	 * Modifies the information of a user. Values of null in any field of the user will be
-	 * considered as if the fields is not to be modified (the name cannot be modified).
+	 * considered as if the the fields is not to be modified (the name cannot be modified).
 	 * @param name the name of the user
 	 * @param pwd password of the user
 	 * @param user Updated information
@@ -51,10 +53,10 @@ public interface RestUsers {
 	 * 400 otherwise.
 	 */
 	@PUT
-	@Path("/{name}")
+	@Path("/{" + NAME + "}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	User updateUser(@PathParam("name") String name, @QueryParam("pwd") String pwd, User user);
+	User updateUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd, User user);
 	
 	/**
 	 * Deletes the user identified by name
@@ -67,9 +69,9 @@ public interface RestUsers {
 	 * 409 otherwise
 	 */
 	@DELETE
-	@Path("/{name}")
+	@Path("/{" + NAME + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	User deleteUser(@PathParam("name") String name, @QueryParam("pwd") String pwd);
+	User deleteUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd);
 	
 	/**
 	 * Returns the list of users for which the pattern is a substring of the name
@@ -81,6 +83,5 @@ public interface RestUsers {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	List<User> searchUsers(@QueryParam("query") String pattern);
-	
+	List<User> searchUsers(@QueryParam(QUERY) String pattern);
 }

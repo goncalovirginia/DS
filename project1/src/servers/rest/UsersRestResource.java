@@ -18,8 +18,8 @@ public class UsersRestResource implements RestUsers {
 	}
 	
 	@Override
-	public String postUser(User user) {
-		return RestResource.processResult(users.postUser(user));
+	public String createUser(User user) {
+		return RestResource.processResult(users.createUser(user));
 	}
 	
 	@Override

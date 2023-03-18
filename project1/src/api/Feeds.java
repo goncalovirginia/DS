@@ -1,23 +1,8 @@
-package api.rest;
-
-import api.Message;
-import api.User;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
+package api;
 
 import java.util.List;
 
-@Path(RestFeeds.PATH)
-public interface RestFeeds {
-	
-	String MID = "mid";
-	String PWD = "pwd";
-	String USER = "user";
-	String TIME = "time";
-	String DOMAIN = "domain";
-	String USERSUB = "userSub";
-	
-	String PATH = "/feeds";
+public interface Feeds {
 	
 	/**
 	 * Posts a new message in the feed, associating it to the feed of the specific user.
@@ -31,11 +16,7 @@ public interface RestFeeds {
 	 * 403 if the publisher does not exist in the current domain or if the pwd is not correct
 	 * 400 otherwise
 	 */
-	@POST
-	@Path("/{" + USER + "}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	long postMessage(@PathParam(USER) String user, @QueryParam(PWD) String pwd, Message msg);
+	Result<Long> postMessage(String user, String pwd, Message msg);
 	
 	/**
 	 * Removes the message identified by mid from the feed of user.
@@ -48,9 +29,7 @@ public interface RestFeeds {
 	 * 403 if the user does not exist or if the pwd is not correct;
 	 * 404 is generated if the message does not exist in the server.
 	 */
-	@DELETE
-	@Path("/{" + USER + "}/{" + MID + "}")
-	void removeFromPersonalFeed(@PathParam(USER) String user, @PathParam(MID) long mid, @QueryParam(PWD) String pwd);
+	Result<Void> removeFromPersonalFeed(String user, long mid, String pwd);
 	
 	/**
 	 * Obtains the message with id from the feed of user (may be a remote user)
@@ -59,10 +38,7 @@ public interface RestFeeds {
 	 * @return 200 the message if it exists;
 	 * 404 if the user or the message does not exists
 	 */
-	@GET
-	@Path("/{" + USER + "}/{" + MID + "}")
-	@Produces(MediaType.APPLICATION_JSON)
-	Message getMessage(@PathParam(USER) String user, @PathParam(MID) long mid);
+	Result<Message> getMessage(String user, long mid);
 	
 	/**
 	 * Returns a list of all messages stored in the server for a given user newer than time
@@ -72,10 +48,7 @@ public interface RestFeeds {
 	 * @return 200 a list of messages, potentially empty;
 	 * 404 if the user does not exist.
 	 */
-	@GET
-	@Path("/{" + USER + "}")
-	@Produces(MediaType.APPLICATION_JSON)
-	List<Message> getMessages(@PathParam(USER) String user, @QueryParam(TIME) long time);
+	Result<List<Message>> getMessages(String user, long time);
 	
 	
 	/**
@@ -89,10 +62,7 @@ public interface RestFeeds {
 	 * 404 is generated if the user to be subscribed does not exist
 	 * 403 is generated if the user does not exist or if the pwd is not correct
 	 */
-	@POST
-	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
-	@Produces(MediaType.APPLICATION_JSON)
-	void subUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
+	Result<Void> subUser(String user, String userSub, String pwd);
 	
 	/**
 	 * UnSubscribe a user
@@ -105,10 +75,7 @@ public interface RestFeeds {
 	 * 403 is generated if the user does not exist or if the pwd is not correct
 	 * 404 is generated if the userSub is not subscribed
 	 */
-	@DELETE
-	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
-	@Produces(MediaType.APPLICATION_JSON)
-	void unsubscribeUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
+	Result<Void> unsubscribeUser(String user, String userSub, String pwd);
 	
 	
 	/**
@@ -117,9 +84,6 @@ public interface RestFeeds {
 	 * @return 200 if ok
 	 * 404 is generated if the user does not exist
 	 */
-	@GET
-	@Path("/sub/list/{" + USER + "}")
-	@Produces(MediaType.APPLICATION_JSON)
-	List<User> listSubs(@PathParam(USER) String user);
+	Result<List<User>> listSubs(String user);
 	
 }

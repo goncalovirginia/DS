@@ -1,13 +1,13 @@
 package clients.rest;
 
 import api.Result;
+import api.User;
 import api.Users;
 import api.rest.RestUsers;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import api.User;
 
 import java.net.URI;
 import java.util.List;
@@ -19,7 +19,7 @@ public class UsersRestClient extends RestClient implements Users {
 	}
 	
 	@Override
-	public Result<String> postUser(User user) {
+	public Result<String> createUser(User user) {
 		return reTry(() -> clt_postUser(user));
 	}
 	
@@ -88,7 +88,8 @@ public class UsersRestClient extends RestClient implements Users {
 				.accept(MediaType.APPLICATION_JSON)
 				.get();
 		
-		return responseToResult(r, new GenericType<List<User>>() {});
+		return responseToResult(r, new GenericType<List<User>>() {
+		});
 	}
 	
 }
