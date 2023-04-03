@@ -11,14 +11,18 @@ import java.net.URI;
 
 public class UsersClientFactory {
 	
-	public static Users getClient() throws IOException {
-		URI serverURI = DiscoverySingleton.getInstance().knownURIsOf(UsersRestServer.SERVICE, 1).get(0);
+	private static final String REST = "/rest";
+	private static final String SOAP = "/soap";
+	
+	public static Users get(URI serverURI) {
+		var uriString = serverURI.toString();
 		
-		if (serverURI.toString().endsWith("rest")) {
+		if (uriString.endsWith(REST))
 			return new UsersRestClient(serverURI);
-		}
-		
-		return new UsersSoapClient(serverURI);
+		else if (uriString.endsWith(SOAP))
+			return new UsersSoapClient(serverURI);
+		else
+			throw new RuntimeException("Unknown service type..." + uriString);
 	}
 	
 }

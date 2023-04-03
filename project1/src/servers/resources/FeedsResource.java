@@ -3,7 +3,7 @@ package servers.resources;
 import api.Message;
 import api.Result;
 import api.User;
-import api.Feeds;
+import api.java.Feeds;
 import clients.UsersClientFactory;
 
 import java.util.List;
@@ -26,7 +26,9 @@ public class FeedsResource implements Feeds {
 		Result<Void> messageValidation = validateMessageObject(msg);
 		if (!messageValidation.isOK()) return Result.error(messageValidation.error());
 		
-		Result<User> userResult = checkUsersServer(user, pwd);
+		String[] nameAndDomain = user.split("@");
+		
+		Result<User> userResult = checkUsersServer(nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
 		Message newMsg = new Message(msg);
@@ -37,12 +39,25 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
+		String[] nameAndDomain = user.split("@");
+		
+		Result<User> userResult = checkUsersServer(nameAndDomain[0], pwd);
+		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
+		
+		Message removedMsg = userMessages.get(nameAndDomain[0]).remove(mid);
+		if (removedMsg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
 		return Result.ok();
 	}
 	
 	@Override
 	public Result<Message> getMessage(String user, long mid) {
-		return Result.ok();
+		String[] nameAndDomain = user.split("@");
+		
+		Message msg = userMessages.get(nameAndDomain[0]).get(mid);
+		if (msg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
+		return Result.ok(msg);
 	}
 	
 	@Override

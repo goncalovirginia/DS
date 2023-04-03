@@ -1,10 +1,9 @@
 package clients.soap;
 
+import api.java.Result;
+import api.soap.FeedsException;
+import api.soap.UsersException;
 import clients.Client;
-import sd2122.tp1.api.service.soap.DirectoryException;
-import sd2122.tp1.api.service.soap.FilesException;
-import sd2122.tp1.api.service.soap.UsersException;
-import sd2122.tp1.api.service.util.Result;
 
 public abstract class SoapClient extends Client {
 	
@@ -20,7 +19,7 @@ public abstract class SoapClient extends Client {
 		try {
 			return Result.ok(func.get());
 		}
-		catch (UsersException | DirectoryException | FilesException e) {
+		catch (UsersException | FeedsException e) {
 			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
 		}
 		catch (Exception e) {
@@ -34,7 +33,7 @@ public abstract class SoapClient extends Client {
 			func.get();
 			return Result.ok();
 		}
-		catch (UsersException | DirectoryException | FilesException e) {
+		catch (UsersException | FeedsException e) {
 			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
 		}
 		catch (Exception e) {

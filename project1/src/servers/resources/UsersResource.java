@@ -1,8 +1,8 @@
 package servers.resources;
 
-import api.Result;
 import api.User;
-import api.Users;
+import api.java.Result;
+import api.java.Users;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class UsersResource implements Users {
 	
 	@Override
 	public Result<String> createUser(User user) {
-		Log.info("postUser : " + user);
+		Log.info("createUser : " + user);
 		
 		Result<Void> r1 = validateUserObject(user);
 		if (!r1.isOK()) return Result.error(r1.error());
@@ -83,6 +83,11 @@ public class UsersResource implements Users {
 		}
 		
 		return Result.ok(matches);
+	}
+	
+	@Override
+	public Result<Void> verifyPassword(String name, String pwd) {
+		return null;
 	}
 	
 	private Result<Void> validateUserObject(User user) {
