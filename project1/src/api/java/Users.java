@@ -1,11 +1,11 @@
 package api.java;
 
-import java.util.List;
-
 import api.User;
 
-public interface Users {
+import java.util.List;
 
+public interface Users {
+	
 	Result<String> createUser(User user);
 	
 	Result<User> getUser(String name, String pwd);
@@ -14,7 +14,6 @@ public interface Users {
 	
 	Result<User> deleteUser(String name, String pwd);
 	
-	Result<List<User>> searchUsers(String pattern);	
+	Result<List<User>> searchUsers(String pattern);
 	
-	Result<Void> verifyPassword( String name, String pwd);
 }

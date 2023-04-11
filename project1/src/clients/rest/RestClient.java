@@ -1,6 +1,6 @@
 package clients.rest;
 
-import api.Result;
+import api.java.Result;
 import clients.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;

@@ -2,6 +2,7 @@ package api.rest;
 
 import api.Message;
 import api.User;
+import api.java.Result;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
@@ -120,6 +121,13 @@ public interface RestFeeds {
 	@GET
 	@Path("/sub/list/{" + USER + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	List<User> listSubs(@PathParam(USER) String user);
+	List<String> listSubs(@PathParam(USER) String user);
+	
+	/**
+	 * Adds the propagated message to the subscriber's feed in the current domain.
+	 * @param message propagated message
+	 * @return 200
+	 */
+	void propagateMessage(Message message);
 	
 }

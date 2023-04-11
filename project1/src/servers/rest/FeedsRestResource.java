@@ -9,7 +9,7 @@ import servers.resources.FeedsResource;
 import java.util.List;
 
 @Singleton
-public class FeedsRestResource implements RestFeeds {
+public class FeedsRestResource extends RestResource implements RestFeeds {
 	
 	private final FeedsResource feeds;
 	
@@ -19,37 +19,42 @@ public class FeedsRestResource implements RestFeeds {
 	
 	@Override
 	public long postMessage(String user, String pwd, Message msg) {
-		return RestResource.processResult(feeds.postMessage(user, pwd, msg));
+		return fromJavaResult(feeds.postMessage(user, pwd, msg));
 	}
 	
 	@Override
 	public void removeFromPersonalFeed(String user, long mid, String pwd) {
-		RestResource.processResult(feeds.removeFromPersonalFeed(user, mid, pwd));
+		fromJavaResult(feeds.removeFromPersonalFeed(user, mid, pwd));
 	}
 	
 	@Override
 	public Message getMessage(String user, long mid) {
-		return RestResource.processResult(feeds.getMessage(user, mid));
+		return fromJavaResult(feeds.getMessage(user, mid));
 	}
 	
 	@Override
 	public List<Message> getMessages(String user, long time) {
-		return RestResource.processResult(feeds.getMessages(user, time));
+		return fromJavaResult(feeds.getMessages(user, time));
 	}
 	
 	@Override
 	public void subUser(String user, String userSub, String pwd) {
-		RestResource.processResult(feeds.subUser(user, userSub, pwd));
+		fromJavaResult(feeds.subUser(user, userSub, pwd));
 	}
 	
 	@Override
 	public void unsubscribeUser(String user, String userSub, String pwd) {
-		RestResource.processResult(feeds.unsubscribeUser(user, userSub, pwd));
+		fromJavaResult(feeds.unsubscribeUser(user, userSub, pwd));
 	}
 	
 	@Override
-	public List<User> listSubs(String user) {
-		return RestResource.processResult(feeds.listSubs(user));
+	public List<String> listSubs(String user) {
+		return fromJavaResult(feeds.listSubs(user));
+	}
+	
+	@Override
+	public void propagateMessage(Message message) {
+		fromJavaResult(feeds.propagateMessage(message));
 	}
 	
 }

@@ -1,8 +1,8 @@
 package clients.rest;
 
-import api.Result;
 import api.User;
-import api.Users;
+import api.java.Result;
+import api.java.Users;
 import api.rest.RestUsers;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;

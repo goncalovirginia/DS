@@ -2,46 +2,50 @@ package servers.soap;
 
 
 import api.User;
-import api.Users;
-import api.service.soap.SoapUsers;
-import api.service.soap.UsersException;
+import api.java.Users;
+import api.soap.SoapUsers;
+import api.soap.UsersException;
 import jakarta.jws.WebService;
 import servers.resources.UsersResource;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @WebService(serviceName = SoapUsers.NAME, targetNamespace = SoapUsers.NAMESPACE, endpointInterface = SoapUsers.INTERFACE)
-public class UsersSoapResource implements SoapUsers {
+public class UsersSoapResource extends SoapResource<UsersException> implements SoapUsers {
+	
+	private static final Logger Log = Logger.getLogger(UsersSoapResource.class.getName());
 	
 	private final Users users;
 	
 	public UsersSoapResource() {
-		users = new UsersResource();
+		super((result) -> new UsersException(result.error().toString()));
+		this.users = new UsersResource();
 	}
 	
 	@Override
 	public String createUser(User user) throws UsersException {
-		return SoapResource.processResult(users.createUser(user), UsersException.class);
+		return fromJavaResult(users.createUser(user));
 	}
 	
 	@Override
-	public User getUser(String userId, String password) throws UsersException {
-		return SoapResource.processResult(users.getUser(userId, password), UsersException.class);
+	public User getUser(String name, String pwd) throws UsersException {
+		return fromJavaResult(users.getUser(name, pwd));
 	}
 	
 	@Override
-	public User updateUser(String userId, String password, User user) throws UsersException {
-		return SoapResource.processResult(users.updateUser(userId, password, user), UsersException.class);
+	public User updateUser(String name, String pwd, User user) throws UsersException {
+		return fromJavaResult(users.updateUser(name, pwd, user));
 	}
 	
 	@Override
-	public User deleteUser(String userId, String password) throws UsersException {
-		return SoapResource.processResult(users.deleteUser(userId, password), UsersException.class);
+	public User deleteUser(String name, String pwd) throws UsersException {
+		return fromJavaResult(users.deleteUser(name, pwd));
 	}
 	
 	@Override
 	public List<User> searchUsers(String pattern) throws UsersException {
-		return SoapResource.processResult(users.searchUsers(pattern), UsersException.class);
+		return fromJavaResult(users.searchUsers(pattern));
 	}
 	
 }

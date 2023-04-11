@@ -1,25 +1,25 @@
 package servers.soap;
 
-import api.Result;
+import api.java.Result;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Logger;
+import java.util.function.Function;
 
-public abstract class SoapResource {
+public abstract class SoapResource<E extends Throwable> {
 	
-	private static final Logger Log = Logger.getLogger(SoapResource.class.getName());
+	Function<Result<?>, E> exceptionMapper;
 	
-	protected static <T, E extends Exception> T processResult(Result<T> result, Class<E> desiredException) throws E {
-		try {
-			if (result.isOK()) {
-				return result.value();
-			}
-			throw desiredException.getConstructor(String.class).newInstance(result.error().name());
+	SoapResource(Function<Result<?>, E> exceptionMapper) {
+		this.exceptionMapper = exceptionMapper;
+	}
+	
+	/*
+	 * Given a Result<T> returns T value or throws an exception created using the given function.
+	 */
+	<T> T fromJavaResult(Result<T> result) throws E {
+		if (result.isOK()) {
+			return result.value();
 		}
-		catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-			Log.info(e.getMessage());
-			return null;
-		}
+		throw exceptionMapper.apply(result);
 	}
 	
 }

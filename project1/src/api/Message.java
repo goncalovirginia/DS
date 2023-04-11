@@ -25,10 +25,10 @@ public class Message {
 	
 	public Message(Message message) {
 		super();
-		this.id = System.currentTimeMillis();
-		this.user = message.getUser();
-		this.domain = message.getDomain();
 		this.creationTime = System.currentTimeMillis();
+		this.user = message.getUser();
+		this.id = this.user.hashCode() + this.creationTime;
+		this.domain = message.getDomain();
 		this.text = message.getText();
 	}
 	

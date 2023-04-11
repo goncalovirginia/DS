@@ -1,16 +1,17 @@
 package api.soap;
 
 import jakarta.xml.ws.WebFault;
+import jakarta.xml.ws.WebServiceException;
 
 @WebFault
-public class UsersException extends Exception {
-
-
+public class UsersException extends WebServiceException {
+	
+	
 	public UsersException() {
 		super("");
 	}
-
-	public UsersException(String errorMessage ) {
+	
+	public UsersException(String errorMessage) {
 		super(errorMessage);
 	}
 	

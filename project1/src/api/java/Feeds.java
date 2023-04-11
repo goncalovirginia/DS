@@ -87,6 +87,13 @@ public interface Feeds {
 	 * @return 200 if ok
 	 * 404 is generated if the user does not exist
 	 */
-	Result<List<User>> listSubs(String user);
+	Result<List<String>> listSubs(String user);
+	
+	/**
+	 * Adds the propagated message to the subscriber's feed in the current domain.
+	 * @param message propagated message
+	 * @return 200
+	 */
+	Result<Void> propagateMessage(Message message);
 	
 }

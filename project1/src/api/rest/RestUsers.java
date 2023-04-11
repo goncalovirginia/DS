@@ -18,7 +18,7 @@ public interface RestUsers {
 	 * Creates a new user in the local domain.
 	 * @param user User to be created
 	 * @return 200 the address of the user (name@domain).
-	 * 409 if the userId already exists.
+	 * 409 if the name already exists.
 	 * 400 otherwise.
 	 */
 	@POST
@@ -33,7 +33,7 @@ public interface RestUsers {
 	 * @return 200 and the user object, if the userId exists and password matches the
 	 * existing password;
 	 * 403 if the password is incorrect;
-	 * 404 if no user exists with the provided userId
+	 * 404 if no user exists with the provided name
 	 */
 	@GET
 	@Path("/{" + NAME + "}")
@@ -42,14 +42,14 @@ public interface RestUsers {
 	
 	/**
 	 * Modifies the information of a user. Values of null in any field of the user will be
-	 * considered as if the the fields is not to be modified (the name cannot be modified).
+	 * considered as if the fields is not to be modified (the name cannot be modified).
 	 * @param name the name of the user
 	 * @param pwd password of the user
 	 * @param user Updated information
 	 * @return 200 the updated user object, if the name exists and password matches
 	 * the existing password
 	 * 403 if the password is incorrect
-	 * 404 if no user exists with the provided userId
+	 * 404 if no user exists with the provided name
 	 * 400 otherwise.
 	 */
 	@PUT
@@ -65,7 +65,7 @@ public interface RestUsers {
 	 * @return 200 the deleted user object, if the name exists and pwd matches the
 	 * existing password
 	 * 403 if the password is incorrect
-	 * 404 if no user exists with the provided userId
+	 * 404 if no user exists with the provided name
 	 * 409 otherwise
 	 */
 	@DELETE
@@ -84,4 +84,5 @@ public interface RestUsers {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	List<User> searchUsers(@QueryParam(QUERY) String pattern);
+	
 }

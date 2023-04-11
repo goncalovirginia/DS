@@ -1,16 +1,17 @@
 package api.soap;
 
 import jakarta.xml.ws.WebFault;
+import jakarta.xml.ws.WebServiceException;
 
 @WebFault
-public class FeedsException extends Exception {
-
-
+public class FeedsException extends WebServiceException {
+	
+	
 	public FeedsException() {
 		super("");
 	}
-
-	public FeedsException(String errorMessage ) {
+	
+	public FeedsException(String errorMessage) {
 		super(errorMessage);
 	}
 	

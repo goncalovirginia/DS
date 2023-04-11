@@ -1,50 +1,63 @@
 package servers.resources;
 
 import api.Message;
-import api.Result;
 import api.User;
 import api.java.Feeds;
+import api.java.Result;
+import clients.FeedsClientFactory;
 import clients.UsersClientFactory;
+import discovery.DiscoverySingleton;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class FeedsResource implements Feeds {
 	
-	private static final Logger Log = Logger.getLogger(UsersResource.class.getName());
+	private static final Logger Log = Logger.getLogger(FeedsResource.class.getName());
 	
-	private final Map<String, Map<Long, Message>> userMessages;
+	private final Map<String, Map<Long, Message>> userFeed;
+	private final Map<String, Set<String>> userSubscribers;
 	
 	public FeedsResource() {
-		userMessages = new ConcurrentHashMap<>();
+		userFeed = new ConcurrentHashMap<>();
+		userSubscribers = new ConcurrentHashMap<>();
 	}
 	
 	@Override
 	public Result<Long> postMessage(String user, String pwd, Message msg) {
-		Result<Void> messageValidation = validateMessageObject(msg);
-		if (!messageValidation.isOK()) return Result.error(messageValidation.error());
+		if (msg.getUser() == null || msg.getDomain() == null || msg.getText() == null) {
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
+		}
 		
 		String[] nameAndDomain = user.split("@");
 		
-		Result<User> userResult = checkUsersServer(nameAndDomain[0], pwd);
-		if (!userResult.isOK()) return Result.error(userResult.error());
+		Result<User> userResult = validateUserCredentials(nameAndDomain[0], pwd);
+		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
 		
 		Message newMsg = new Message(msg);
-		userMessages.get(user).put(newMsg.getId(), newMsg);
+		userFeed.get(user).put(newMsg.getId(), newMsg);
 		
-		return Result.ok(newMsg.getCreationTime());
+		propagateMessage(newMsg);
+		
+		for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("feeds", 1)) {
+			FeedsClientFactory.get(uri).propagateMessage(newMsg);
+		}
+		
+		return Result.ok(newMsg.getId());
 	}
 	
 	@Override
 	public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
 		String[] nameAndDomain = user.split("@");
 		
-		Result<User> userResult = checkUsersServer(nameAndDomain[0], pwd);
+		Result<User> userResult = validateUserCredentials(nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
 		
-		Message removedMsg = userMessages.get(nameAndDomain[0]).remove(mid);
+		Message removedMsg = userFeed.get(nameAndDomain[0]).remove(mid);
 		if (removedMsg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		return Result.ok();
@@ -54,7 +67,7 @@ public class FeedsResource implements Feeds {
 	public Result<Message> getMessage(String user, long mid) {
 		String[] nameAndDomain = user.split("@");
 		
-		Message msg = userMessages.get(nameAndDomain[0]).get(mid);
+		Message msg = userFeed.get(nameAndDomain[0]).get(mid);
 		if (msg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		return Result.ok(msg);
@@ -76,21 +89,26 @@ public class FeedsResource implements Feeds {
 	}
 	
 	@Override
-	public Result<List<User>> listSubs(String user) {
+	public Result<List<String>> listSubs(String user) {
 		return Result.ok();
 	}
 	
-	private Result<Void> validateMessageObject(Message message) {
-		if (message.getUser() == null || message.getDomain() == null || message.getText() == null) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+	@Override
+	public Result<Void> propagateMessage(Message message) {
+		Set<String> subscribers = userSubscribers.get(message.getUser());
+		
+		if (subscribers != null) {
+			for (String subscriber : subscribers) {
+				userFeed.get(subscriber).put(message.getId(), message);
+			}
 		}
 		
 		return Result.ok();
 	}
 	
-	private Result<User> checkUsersServer(String userId, String password) {
+	private Result<User> validateUserCredentials(String userId, String password) {
 		try {
-			return UsersClientFactory.getClient().getUser(userId, password);
+			return UsersClientFactory.get(new URI("")).getUser(userId, password);
 		}
 		catch (Exception e) {
 			Log.info(e.getMessage());
