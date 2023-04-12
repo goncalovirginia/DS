@@ -12,12 +12,14 @@ public interface Feeds {
 	 * A message should be identified before publish it, by assigning an ID.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
+	 *
 	 * @param user user of the operation (format user@domain)
 	 * @param msg the message object to be posted to the server
 	 * @param pwd password of the user sending the message
-	 * @return 200 the unique numerical identifier for the posted message;
-	 * 403 if the publisher does not exist in the current domain or if the pwd is not correct
-	 * 400 otherwise
+	 * @return	200 the unique numerical identifier for the posted message;
+	 *			404 if the publisher does not exist in the current domain
+	 *			403 if the pwd is not correct
+	 *			400 otherwise
 	 */
 	Result<Long> postMessage(String user, String pwd, Message msg);
 	
@@ -25,12 +27,13 @@ public interface Feeds {
 	 * Removes the message identified by mid from the feed of user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
+	 *
 	 * @param user user feed being accessed (format user@domain)
 	 * @param mid the identifier of the message to be deleted
 	 * @param pwd password of the user
-	 * @return 204 if ok
-	 * 403 if the user does not exist or if the pwd is not correct;
-	 * 404 is generated if the message does not exist in the server.
+	 * @return	204 if ok
+	 *			403 if the pwd is not correct
+	 * 			404 is generated if the message does not exist in the server or if the user does not exist
 	 */
 	Result<Void> removeFromPersonalFeed(String user, long mid, String pwd);
 	
@@ -39,7 +42,7 @@ public interface Feeds {
 	 * @param user user feed being accessed (format user@domain)
 	 * @param mid id of the message
 	 * @return 200 the message if it exists;
-	 * 404 if the user or the message does not exists
+	 * 404 if the user or the message does not exist
 	 */
 	Result<Message> getMessage(String user, long mid);
 	

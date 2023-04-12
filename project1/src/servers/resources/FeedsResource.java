@@ -21,8 +21,6 @@ public class FeedsResource implements Feeds {
 	private final Map<String, Map<Long, Message>> userFeed;
 	private final Map<String, Set<String>> userSubscribers;
 	
-	private URI usersServer = null;
-	
 	public FeedsResource() {
 		userFeed = new ConcurrentHashMap<>();
 		userSubscribers = new ConcurrentHashMap<>();
@@ -30,6 +28,8 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Long> postMessage(String user, String pwd, Message msg) {
+		Log.info("postMessage : user = " + user + "; pwd = " + pwd + "; msg = " + msg);
+		
 		String[] nameAndDomain = user.split("@");
 		
 		if (msg.getUser() == null || msg.getDomain() == null || !msg.getDomain().equals(Server.domain) || msg.getText() == null || !nameAndDomain[1].equals(Server.domain)) {
@@ -37,7 +37,7 @@ public class FeedsResource implements Feeds {
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
-		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
+		if (!userResult.isOK()) return Result.error(userResult.error());
 		
 		Message newMsg = new Message(msg);
 		userFeed.putIfAbsent(user, new HashMap<>());
@@ -45,17 +45,13 @@ public class FeedsResource implements Feeds {
 		
 		propagateMessage(newMsg);
 		
-		for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("feeds", 0)) {
-			if (!uri.toString().contains(Server.domain)) {
-				new Thread(() -> FeedsClientFactory.get(uri).propagateMessage(newMsg)).start();
-			}
-		}
-		
 		return Result.ok(newMsg.getId());
 	}
 	
 	@Override
 	public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
+		Log.info("removeFromPersonalFeed : user = " + user + "; mid = " + mid + "; pwd = " + pwd);
+		
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
@@ -65,7 +61,7 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
 		
-		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		Map<Long, Message> feed = userFeed.get(user);
 		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		Message removedMsg = feed.remove(mid);
 		if (removedMsg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
@@ -75,9 +71,11 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Message> getMessage(String user, long mid) {
+		Log.info("getMessage : user = " + user + "; mid = " + mid);
+		
 		String[] nameAndDomain = user.split("@");
 		
-		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		Map<Long, Message> feed = userFeed.get(user);
 		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		Message msg = feed.get(mid);
 		if (msg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
@@ -87,9 +85,11 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<List<Message>> getMessages(String user, long time) {
+		Log.info("getMessages : user = " + user + "; time = " + time);
+		
 		String[] nameAndDomain = user.split("@");
 		
-		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		Map<Long, Message> feed = userFeed.get(user);
 		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		List<Message> messages = new LinkedList<>();
@@ -105,6 +105,8 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Void> subUser(String user, String userSub, String pwd) {
+		Log.info("subUser : user = " + user + "; userSub = " + userSub + "; pwd = " + pwd);
+		
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
@@ -119,14 +121,16 @@ public class FeedsResource implements Feeds {
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
 		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(subNameAndDomain[0], new HashSet<>());
-		userSubscribers.get(subNameAndDomain[0]).add(nameAndDomain[0]);
+		userSubscribers.putIfAbsent(userSub, new HashSet<>());
+		userSubscribers.get(userSub).add(user);
 		
 		return Result.ok();
 	}
 	
 	@Override
 	public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
+		Log.info("unsubscribeUser : user = " + user + "; userSub = " + userSub + "; pwd = " + pwd);
+		
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
@@ -141,14 +145,16 @@ public class FeedsResource implements Feeds {
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
 		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(subNameAndDomain[0], new HashSet<>());
-		userSubscribers.get(subNameAndDomain[0]).remove(nameAndDomain[0]);
+		userSubscribers.putIfAbsent(userSub, new HashSet<>());
+		userSubscribers.get(userSub).remove(user);
 		
 		return Result.ok();
 	}
 	
 	@Override
 	public Result<List<String>> listSubs(String user) {
+		Log.info("listSubs : user = " + user);
+		
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
@@ -158,7 +164,7 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
 		if (userResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
-		return Result.ok(userSubscribers.get(nameAndDomain[0]).stream().toList());
+		return Result.ok(userSubscribers.get(user).stream().toList());
 	}
 	
 	@Override
@@ -175,17 +181,10 @@ public class FeedsResource implements Feeds {
 	}
 	
 	private Result<User> validateUserCredentials(String domain, String userId, String password) {
-		try {
-			for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("users", 1)) {
-				if (uri.toString().contains(domain)) {
-					return UsersClientFactory.get(uri).getUser(userId, password);
-				}
-			}
+		for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("users", 1)) {
+			return UsersClientFactory.get(uri).getUser(userId, password);
 		}
-		catch (Exception e) {
-			Log.info(e.getMessage());
-		}
-		return Result.error(Result.ErrorCode.BAD_REQUEST);
+		return Result.error(Result.ErrorCode.INTERNAL_ERROR);
 	}
 	
 }

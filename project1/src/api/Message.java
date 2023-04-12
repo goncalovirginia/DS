@@ -7,6 +7,8 @@ import servers.Server;
  */
 public class Message {
 	
+	private static final long BASE = Server.serverId * 100000000000000000L;
+	
 	private static long count = 0;
 	
 	private long id;
@@ -29,7 +31,7 @@ public class Message {
 	
 	public Message(Message message) {
 		super();
-		this.id = Server.serverId + count * 256;
+		this.id = BASE + count++;
 		this.user = message.getUser();
 		this.domain = message.getDomain();
 		this.creationTime = System.currentTimeMillis();
