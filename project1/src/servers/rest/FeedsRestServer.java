@@ -1,12 +1,12 @@
 package servers.rest;
 
-public class UsersRestServer extends RestServer {
+public class FeedsRestServer extends RestServer {
 	
 	public static final int PORT = 8080;
-	public static final String SERVICE = "users";
+	public static final String SERVICE = "feeds";
 	
-	private UsersRestServer() {
-		super(UsersRestServer.class.getName(), PORT, SERVICE, UsersRestResource.class);
+	private FeedsRestServer() {
+		super(FeedsRestServer.class.getName(), PORT, SERVICE, FeedsRestResource.class);
 	}
 	
 	public static void main(String[] args) {
@@ -17,7 +17,7 @@ public class UsersRestServer extends RestServer {
 		domain = args[0];
 		serverId = Long.parseLong(args[1]);
 		
-		new UsersRestServer().run();
+		new FeedsRestServer().run();
 	}
 	
 }

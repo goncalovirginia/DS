@@ -4,6 +4,9 @@ import api.Message;
 import api.java.Feeds;
 import api.java.Result;
 import api.rest.RestFeeds;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
@@ -51,6 +54,15 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	
 	@Override
 	public Result<Void> propagateMessage(Message message) {
-		return null;
+		return reTry(() -> clt_propagateMessage(message));
 	}
+	
+	private Result<Void> clt_propagateMessage(Message message) {
+		Response r = target.path("propagate")
+				.request()
+				.put(Entity.entity(message, MediaType.APPLICATION_JSON));
+		
+		return responseToResult(r, Void.class);
+	}
+	
 }

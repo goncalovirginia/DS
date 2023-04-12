@@ -2,11 +2,14 @@ package clients.soap;
 
 import api.java.Result;
 import api.soap.FeedsException;
+import api.soap.SoapFeeds;
 import api.soap.UsersException;
 import clients.Client;
 import com.sun.xml.ws.client.BindingProviderProperties;
 import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 
+import javax.xml.namespace.QName;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;

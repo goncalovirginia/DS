@@ -58,12 +58,13 @@ public interface Feeds {
 	 * Subscribe a user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
+	 *
 	 * @param user the user subscribing (following) other user (format user@domain)
 	 * @param userSub the user to be subscribed (followed) (format user@domain)
-	 * @param pwd password of the user to subscribe
-	 * @return 200 if ok
-	 * 404 is generated if the user to be subscribed does not exist
-	 * 403 is generated if the user does not exist or if the pwd is not correct
+	 * @param pwd password of the user
+	 * @return	204 if ok
+	 * 			404 is generated if the user or the user to be subscribed does not exist
+	 * 			403 is generated if the pwd is not correct
 	 */
 	Result<Void> subUser(String user, String userSub, String pwd);
 	
@@ -71,21 +72,23 @@ public interface Feeds {
 	 * UnSubscribe a user
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
+	 *
 	 * @param user the user unsubscribing (following) other user (format user@domain)
 	 * @param userSub the identifier of the user to be unsubscribed
-	 * @param pwd password of the user to subscribe
-	 * @return 200 if ok
-	 * 403 is generated if the user does not exist or if the pwd is not correct
-	 * 404 is generated if the userSub is not subscribed
+	 * @param pwd password of the user
+	 * @return 	204 if ok
+	 * 			404 is generated if the user or the user to be unsubscribed does not exist
+	 * 			403 is generated if the pwd is not correct
 	 */
 	Result<Void> unsubscribeUser(String user, String userSub, String pwd);
 	
 	
 	/**
 	 * Subscribed users.
+	 *
 	 * @param user user being accessed (format user@domain)
-	 * @return 200 if ok
-	 * 404 is generated if the user does not exist
+	 * @return 	200 if ok
+	 * 			404 is generated if the user does not exist
 	 */
 	Result<List<String>> listSubs(String user);
 	

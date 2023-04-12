@@ -9,6 +9,9 @@ public abstract class Server {
 	protected final String service;
 	protected final Class<?> resource;
 	
+	public static String domain;
+	public static long serverId;
+	
 	protected Server(String className, int port, String service, Class<?> resource) {
 		Log = Logger.getLogger(className);
 		this.port = port;

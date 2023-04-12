@@ -1,6 +1,7 @@
 package servers.soap;
 
 import discovery.DiscoverySingleton;
+import jakarta.xml.ws.Endpoint;
 import servers.Server;
 
 import java.net.InetAddress;

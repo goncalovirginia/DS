@@ -1,12 +1,12 @@
 package servers.soap;
 
-public class UsersSoapServer extends SoapServer {
+public class FeedsSoapServer extends SoapServer {
 	
 	public static final int PORT = 8080;
-	public static final String SERVICE = "users";
+	public static final String SERVICE = "feeds";
 	
-	private UsersSoapServer() {
-		super(UsersSoapServer.class.getName(), PORT, SERVICE, UsersSoapResource.class);
+	private FeedsSoapServer() {
+		super(FeedsSoapServer.class.getName(), PORT, SERVICE, FeedsSoapResource.class);
 	}
 	
 	public static void main(String[] args) {
@@ -17,7 +17,7 @@ public class UsersSoapServer extends SoapServer {
 		domain = args[0];
 		serverId = Long.parseLong(args[1]);
 		
-		new UsersSoapServer().run();
+		new FeedsSoapServer().run();
 	}
 	
 }

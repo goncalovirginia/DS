@@ -7,11 +7,10 @@ import api.java.Result;
 import clients.FeedsClientFactory;
 import clients.UsersClientFactory;
 import discovery.DiscoverySingleton;
+import servers.Server;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -22,6 +21,8 @@ public class FeedsResource implements Feeds {
 	private final Map<String, Map<Long, Message>> userFeed;
 	private final Map<String, Set<String>> userSubscribers;
 	
+	private URI usersServer = null;
+	
 	public FeedsResource() {
 		userFeed = new ConcurrentHashMap<>();
 		userSubscribers = new ConcurrentHashMap<>();
@@ -29,22 +30,25 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Long> postMessage(String user, String pwd, Message msg) {
-		if (msg.getUser() == null || msg.getDomain() == null || msg.getText() == null) {
+		String[] nameAndDomain = user.split("@");
+		
+		if (msg.getUser() == null || msg.getDomain() == null || !msg.getDomain().equals(Server.domain) || msg.getText() == null || !nameAndDomain[1].equals(Server.domain)) {
 			return Result.error(Result.ErrorCode.BAD_REQUEST);
 		}
 		
-		String[] nameAndDomain = user.split("@");
-		
-		Result<User> userResult = validateUserCredentials(nameAndDomain[0], pwd);
+		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
 		
 		Message newMsg = new Message(msg);
+		userFeed.putIfAbsent(user, new HashMap<>());
 		userFeed.get(user).put(newMsg.getId(), newMsg);
 		
 		propagateMessage(newMsg);
 		
-		for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("feeds", 1)) {
-			FeedsClientFactory.get(uri).propagateMessage(newMsg);
+		for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("feeds", 0)) {
+			if (!uri.toString().contains(Server.domain)) {
+				new Thread(() -> FeedsClientFactory.get(uri).propagateMessage(newMsg)).start();
+			}
 		}
 		
 		return Result.ok(newMsg.getId());
@@ -54,10 +58,16 @@ public class FeedsResource implements Feeds {
 	public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
 		String[] nameAndDomain = user.split("@");
 		
-		Result<User> userResult = validateUserCredentials(nameAndDomain[0], pwd);
+		if (!nameAndDomain[1].equals(Server.domain)) {
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
+		}
+		
+		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(Result.ErrorCode.FORBIDDEN);
 		
-		Message removedMsg = userFeed.get(nameAndDomain[0]).remove(mid);
+		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		Message removedMsg = feed.remove(mid);
 		if (removedMsg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		return Result.ok();
@@ -67,7 +77,9 @@ public class FeedsResource implements Feeds {
 	public Result<Message> getMessage(String user, long mid) {
 		String[] nameAndDomain = user.split("@");
 		
-		Message msg = userFeed.get(nameAndDomain[0]).get(mid);
+		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		Message msg = feed.get(mid);
 		if (msg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		return Result.ok(msg);
@@ -75,22 +87,78 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<List<Message>> getMessages(String user, long time) {
-		return Result.ok();
+		String[] nameAndDomain = user.split("@");
+		
+		Map<Long, Message> feed = userFeed.get(nameAndDomain[0]);
+		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
+		List<Message> messages = new LinkedList<>();
+		
+		for (Message message : feed.values()) {
+			if (message.getCreationTime() > time) {
+				messages.add(message);
+			}
+		}
+		
+		return Result.ok(messages);
 	}
 	
 	@Override
 	public Result<Void> subUser(String user, String userSub, String pwd) {
+		String[] nameAndDomain = user.split("@");
+		
+		if (!nameAndDomain[1].equals(Server.domain)) {
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
+		}
+		
+		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
+		if (!userResult.isOK()) return Result.error(userResult.error());
+		
+		String[] subNameAndDomain = userSub.split("@");
+		
+		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
+		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
+		userSubscribers.putIfAbsent(subNameAndDomain[0], new HashSet<>());
+		userSubscribers.get(subNameAndDomain[0]).add(nameAndDomain[0]);
+		
 		return Result.ok();
 	}
 	
 	@Override
 	public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
+		String[] nameAndDomain = user.split("@");
+		
+		if (!nameAndDomain[1].equals(Server.domain)) {
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
+		}
+		
+		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
+		if (!userResult.isOK()) return Result.error(userResult.error());
+		
+		String[] subNameAndDomain = userSub.split("@");
+		
+		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
+		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
+		userSubscribers.putIfAbsent(subNameAndDomain[0], new HashSet<>());
+		userSubscribers.get(subNameAndDomain[0]).remove(nameAndDomain[0]);
+		
 		return Result.ok();
 	}
 	
 	@Override
 	public Result<List<String>> listSubs(String user) {
-		return Result.ok();
+		String[] nameAndDomain = user.split("@");
+		
+		if (!nameAndDomain[1].equals(Server.domain)) {
+			return Result.error(Result.ErrorCode.NOT_FOUND);
+		}
+		
+		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
+		if (userResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		
+		return Result.ok(userSubscribers.get(nameAndDomain[0]).stream().toList());
 	}
 	
 	@Override
@@ -106,14 +174,18 @@ public class FeedsResource implements Feeds {
 		return Result.ok();
 	}
 	
-	private Result<User> validateUserCredentials(String userId, String password) {
+	private Result<User> validateUserCredentials(String domain, String userId, String password) {
 		try {
-			return UsersClientFactory.get(new URI("")).getUser(userId, password);
+			for (URI uri : DiscoverySingleton.getInstance().knownURIsOf("users", 1)) {
+				if (uri.toString().contains(domain)) {
+					return UsersClientFactory.get(uri).getUser(userId, password);
+				}
+			}
 		}
 		catch (Exception e) {
 			Log.info(e.getMessage());
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
 		}
+		return Result.error(Result.ErrorCode.BAD_REQUEST);
 	}
 	
 }

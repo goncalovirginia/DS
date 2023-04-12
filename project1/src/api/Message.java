@@ -1,9 +1,13 @@
 package api;
 
+import servers.Server;
+
 /**
  * Represents a message in the system.
  */
 public class Message {
+	
+	private static long count = 0;
 	
 	private long id;
 	private String user;
@@ -25,10 +29,10 @@ public class Message {
 	
 	public Message(Message message) {
 		super();
-		this.creationTime = System.currentTimeMillis();
+		this.id = Server.serverId + count * 256;
 		this.user = message.getUser();
-		this.id = this.user.hashCode() + this.creationTime;
 		this.domain = message.getDomain();
+		this.creationTime = System.currentTimeMillis();
 		this.text = message.getText();
 	}
 	

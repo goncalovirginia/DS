@@ -9,7 +9,8 @@ public class DiscoverySingleton implements Discovery {
 	private static final Logger Log = Logger.getLogger(Discovery.class.getName());
 	
 	// The pre-agreed multicast endpoint assigned to perform discovery.
-	public static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("224.9.9.9", 9999);
+	public static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
+	
 	public static final int DISCOVERY_RETRY_TIMEOUT = 5000;
 	public static final int DISCOVERY_ANNOUNCE_PERIOD = 1000;
 	

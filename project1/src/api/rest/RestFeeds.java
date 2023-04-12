@@ -92,7 +92,6 @@ public interface RestFeeds {
 	 */
 	@POST
 	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
-	@Produces(MediaType.APPLICATION_JSON)
 	void subUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
 	
 	/**
@@ -108,7 +107,6 @@ public interface RestFeeds {
 	 */
 	@DELETE
 	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
-	@Produces(MediaType.APPLICATION_JSON)
 	void unsubscribeUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
 	
 	
@@ -128,6 +126,8 @@ public interface RestFeeds {
 	 * @param message propagated message
 	 * @return 200
 	 */
+	@PUT
+	@Path("/propagate")
 	void propagateMessage(Message message);
 	
 }

@@ -3,14 +3,31 @@ package clients.soap;
 import api.Message;
 import api.java.Feeds;
 import api.java.Result;
+import api.soap.SoapFeeds;
+import api.soap.SoapUsers;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
 
+import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.List;
 
 public class FeedsSoapClient extends SoapClient implements Feeds {
 	
+	private SoapFeeds stub;
+	
 	public FeedsSoapClient(URI serverURI) {
 		super(serverURI);
+	}
+	
+	synchronized private SoapFeeds stub() {
+		if (stub == null) {
+			QName qName = new QName(SoapFeeds.NAMESPACE, SoapFeeds.NAME);
+			Service service = Service.create(toURL(serverURI + WSDL), qName);
+			this.stub = service.getPort(SoapFeeds.class);
+			super.setTimeouts((BindingProvider) stub);
+		}
+		return stub;
 	}
 	
 	@Override
@@ -50,6 +67,7 @@ public class FeedsSoapClient extends SoapClient implements Feeds {
 	
 	@Override
 	public Result<Void> propagateMessage(Message message) {
-		return null;
+		return reTry(() -> responseToResult(() -> stub().propagateMessage(message)));
 	}
+	
 }
