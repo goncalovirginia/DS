@@ -3,16 +3,16 @@ package servers.soap;
 
 import api.User;
 import api.java.Users;
-import api.soap.SoapUsers;
 import api.soap.UsersException;
+import api.soap.UsersService;
 import jakarta.jws.WebService;
 import servers.resources.UsersResource;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-@WebService(serviceName = SoapUsers.NAME, targetNamespace = SoapUsers.NAMESPACE, endpointInterface = SoapUsers.INTERFACE)
-public class UsersSoapResource extends SoapResource<UsersException> implements SoapUsers {
+@WebService(serviceName = UsersService.NAME, targetNamespace = UsersService.NAMESPACE, endpointInterface = UsersService.INTERFACE)
+public class UsersSoapResource extends SoapResource<UsersException> implements UsersService {
 	
 	private static final Logger Log = Logger.getLogger(UsersSoapResource.class.getName());
 	

@@ -3,7 +3,7 @@ package clients.soap;
 import api.User;
 import api.java.Result;
 import api.java.Users;
-import api.soap.SoapUsers;
+import api.soap.UsersService;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
 
@@ -13,17 +13,17 @@ import java.util.List;
 
 public class UsersSoapClient extends SoapClient implements Users {
 	
-	private SoapUsers stub;
+	private UsersService stub;
 	
 	public UsersSoapClient(URI serverURI) {
 		super(serverURI);
 	}
 	
-	synchronized private SoapUsers stub() {
+	synchronized private UsersService stub() {
 		if (stub == null) {
-			QName qName = new QName(SoapUsers.NAMESPACE, SoapUsers.NAME);
+			QName qName = new QName(UsersService.NAMESPACE, UsersService.NAME);
 			Service service = Service.create(toURL(serverURI + WSDL), qName);
-			this.stub = service.getPort(SoapUsers.class);
+			this.stub = service.getPort(UsersService.class);
 			super.setTimeouts((BindingProvider) stub);
 		}
 		return stub;

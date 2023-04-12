@@ -3,12 +3,14 @@ package servers.soap;
 import api.Message;
 import api.java.Feeds;
 import api.soap.FeedsException;
-import api.soap.SoapFeeds;
+import api.soap.FeedsService;
+import jakarta.jws.WebService;
 import servers.resources.FeedsResource;
 
 import java.util.List;
 
-public class FeedsSoapResource extends SoapResource<FeedsException> implements SoapFeeds {
+@WebService(serviceName = FeedsService.NAME, targetNamespace = FeedsService.NAMESPACE, endpointInterface = FeedsService.INTERFACE)
+public class FeedsSoapResource extends SoapResource<FeedsException> implements FeedsService {
 	
 	private final Feeds feeds;
 	

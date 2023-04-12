@@ -6,12 +6,12 @@ import jakarta.jws.WebService;
 
 import java.util.List;
 
-@WebService(serviceName = SoapUsers.NAME, targetNamespace = SoapUsers.NAMESPACE, endpointInterface = SoapUsers.INTERFACE)
-public interface SoapUsers {
+@WebService(serviceName = UsersService.NAME, targetNamespace = UsersService.NAMESPACE, endpointInterface = UsersService.INTERFACE)
+public interface UsersService {
 	
 	String NAME = "users";
 	String NAMESPACE = "http://sd2223";
-	String INTERFACE = "api.soap.RestUsers";
+	String INTERFACE = "api.soap.UsersService";
 	
 	/**
 	 * Creates a new user identified by name.

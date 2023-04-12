@@ -6,12 +6,12 @@ import jakarta.jws.WebService;
 
 import java.util.List;
 
-@WebService(serviceName = SoapFeeds.NAME, targetNamespace = SoapFeeds.NAMESPACE, endpointInterface = SoapFeeds.INTERFACE)
-public interface SoapFeeds {
+@WebService(serviceName = FeedsService.NAME, targetNamespace = FeedsService.NAMESPACE, endpointInterface = FeedsService.INTERFACE)
+public interface FeedsService {
 	
 	String NAME = "feeds";
 	String NAMESPACE = "http://sd2223";
-	String INTERFACE = "api.soap.SoapFeeds";
+	String INTERFACE = "api.soap.FeedsService";
 	
 	/**
 	 * Posts a new message in the feed, associating it to the feed of the specific user.

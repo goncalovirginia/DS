@@ -3,7 +3,7 @@ package clients.soap;
 import api.Message;
 import api.java.Feeds;
 import api.java.Result;
-import api.soap.SoapFeeds;
+import api.soap.FeedsService;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
 
@@ -13,17 +13,17 @@ import java.util.List;
 
 public class FeedsSoapClient extends SoapClient implements Feeds {
 	
-	private SoapFeeds stub;
+	private FeedsService stub;
 	
 	public FeedsSoapClient(URI serverURI) {
 		super(serverURI);
 	}
 	
-	synchronized private SoapFeeds stub() {
+	synchronized private FeedsService stub() {
 		if (stub == null) {
-			QName qName = new QName(SoapFeeds.NAMESPACE, SoapFeeds.NAME);
+			QName qName = new QName(FeedsService.NAMESPACE, FeedsService.NAME);
 			Service service = Service.create(toURL(serverURI + WSDL), qName);
-			this.stub = service.getPort(SoapFeeds.class);
+			this.stub = service.getPort(FeedsService.class);
 			super.setTimeouts((BindingProvider) stub);
 		}
 		return stub;
