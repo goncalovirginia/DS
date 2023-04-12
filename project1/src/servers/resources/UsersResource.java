@@ -34,7 +34,7 @@ public class UsersResource implements Users {
 			return Result.error(Result.ErrorCode.CONFLICT);
 		}
 		
-		return Result.ok(user.getName());
+		return Result.ok(user.getName() + "@" + user.getDomain());
 	}
 	
 	@Override
@@ -47,6 +47,10 @@ public class UsersResource implements Users {
 	@Override
 	public Result<User> updateUser(String name, String pwd, User user) {
 		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
+		
+		if (user.getName() != null && !name.equals(user.getName())) {
+			return Result.error(Result.ErrorCode.BAD_REQUEST);
+		}
 		
 		Result<User> r = validateUserCredentials(name, pwd);
 		if (!r.isOK()) return r;
@@ -87,13 +91,13 @@ public class UsersResource implements Users {
 		return Result.ok(matches);
 	}
 	
-	private Result<User> validateUserCredentials(String userId, String password) {
-		if (userId == null || password == null) {
-			Log.info("UserId or password null.");
+	private Result<User> validateUserCredentials(String name, String password) {
+		if (name == null || password == null) {
+			Log.info("name or password null.");
 			return Result.error(Result.ErrorCode.BAD_REQUEST);
 		}
 		
-		User user = users.get(userId);
+		User user = users.get(name);
 		
 		if (user == null) {
 			Log.info("User does not exist.");
