@@ -30,9 +30,9 @@ abstract class RestServer extends Server {
 			String serverURI = String.format(SERVER_URI_FMT, ip, port);
 			JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 			
-			Log.info(String.format("%s Server ready @ %s\n", service, serverURI));
+			Log.info(String.format("%s Server ready @ %s\n", domain + ":" + service, serverURI));
 			
-			DiscoverySingleton.getInstance().announce(service, serverURI);
+			DiscoverySingleton.getInstance().announce(domain + ":" + service, serverURI);
 		}
 		catch (Exception e) {
 			Log.info(e.getMessage());

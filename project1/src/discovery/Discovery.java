@@ -18,11 +18,17 @@ public interface Discovery {
 	void announce(String serviceName, String serviceURI);
 	
 	/**
-	 * Get discovered URIs for a given service name
-	 * @param serviceName - name of the service
-	 * @param minReplies - minimum number of requested URIs. Blocks until the number is satisfied.
-	 * @return array with the discovered URIs for the given service name.
+	 * Get the URI for a given service name
+	 * @param service - name of the service
+	 * @return URI for the given service name.
 	 */
-	List<URI> knownURIsOf(String serviceName, int minReplies);
+	URI getURI(String service);
+	
+	/**
+	 * Get the URIs of feeds services from other domains.
+	 * @param currDomain domain calling the method (not included in the return value)
+	 * @return all feeds service URIs from other domains.
+	 */
+	List<URI> getURIsOfOtherDomainsFeeds(String currDomain);
 	
 }

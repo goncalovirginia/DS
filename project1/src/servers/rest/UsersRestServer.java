@@ -1,7 +1,5 @@
 package servers.rest;
 
-import java.util.Arrays;
-
 public class UsersRestServer extends RestServer {
 	
 	public static final int PORT = 8080;

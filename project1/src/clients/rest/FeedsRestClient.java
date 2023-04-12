@@ -5,6 +5,7 @@ import api.java.Feeds;
 import api.java.Result;
 import api.rest.RestFeeds;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -29,12 +30,12 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	
 	@Override
 	public Result<Message> getMessage(String user, long mid) {
-		return null;
+		return reTry(() -> clt_getMessage(user, mid));
 	}
 	
 	@Override
 	public Result<List<Message>> getMessages(String user, long time) {
-		return null;
+		return reTry(() -> clt_getMessages(user, time));
 	}
 	
 	@Override
@@ -63,6 +64,27 @@ public class FeedsRestClient extends RestClient implements Feeds {
 				.put(Entity.entity(message, MediaType.APPLICATION_JSON));
 		
 		return responseToResult(r, Void.class);
+	}
+	
+	private Result<Message> clt_getMessage(String user, long mid) {
+		Response r = target.path(user)
+				.path(Long.toString(mid))
+				.request()
+				.accept(MediaType.APPLICATION_JSON)
+				.get();
+		
+		return responseToResult(r, Message.class);
+	}
+	
+	private Result<List<Message>> clt_getMessages(String user, long time) {
+		Response r = target.path(user)
+				.queryParam(Long.toString(time))
+				.request()
+				.accept(MediaType.APPLICATION_JSON)
+				.get();
+		
+		return responseToResult(r, new GenericType<List<Message>>() {
+		});
 	}
 	
 }

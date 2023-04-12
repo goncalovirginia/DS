@@ -1,7 +1,6 @@
 package servers.rest;
 
 import api.Message;
-import api.User;
 import api.rest.RestFeeds;
 import jakarta.inject.Singleton;
 import servers.resources.FeedsResource;

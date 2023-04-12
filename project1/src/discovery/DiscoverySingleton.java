@@ -1,7 +1,10 @@
 package discovery;
 
 import java.net.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class DiscoverySingleton implements Discovery {
@@ -18,7 +21,7 @@ public class DiscoverySingleton implements Discovery {
 	private static final int MAX_DATAGRAM_SIZE = 65536;
 	
 	private static Discovery singleton;
-	private static final Map<String, Set<URI>> serviceURIs = new HashMap<>();
+	private static final Map<String, URI> serviceURI = new HashMap<>();
 	
 	public synchronized static Discovery getInstance() {
 		if (singleton == null) {
@@ -58,10 +61,22 @@ public class DiscoverySingleton implements Discovery {
 	}
 	
 	@Override
-	public List<URI> knownURIsOf(String serviceName, int minEntries) {
-		Set<URI> uris;
-		while ((uris = serviceURIs.get(serviceName)) == null || uris.size() < minEntries) ;
-		return uris.stream().toList();
+	public URI getURI(String service) {
+		while (serviceURI.get(service) == null) ;
+		return serviceURI.get(service);
+	}
+	
+	@Override
+	public List<URI> getURIsOfOtherDomainsFeeds(String currDomain) {
+		List<URI> uris = new LinkedList<>();
+		
+		for (Map.Entry<String, URI> entry : serviceURI.entrySet()) {
+			if (!entry.getKey().contains(currDomain) && entry.getKey().contains("feeds")) {
+				uris.add(entry.getValue());
+			}
+		}
+		
+		return uris;
 	}
 	
 	private void startListener() {
@@ -83,8 +98,7 @@ public class DiscoverySingleton implements Discovery {
 							throw new Exception("Invalid announcement format.");
 						}
 						
-						serviceURIs.putIfAbsent(parts[0], new HashSet<>());
-						serviceURIs.get(parts[0]).add(URI.create(parts[1]));
+						serviceURI.put(parts[0], URI.create(parts[1]));
 					}
 					catch (Exception x) {
 						x.printStackTrace();

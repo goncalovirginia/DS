@@ -28,9 +28,9 @@ abstract class SoapServer extends Server {
 			
 			Endpoint.publish(serverURI.replace(ip, "0.0.0.0"), resource.getConstructor().newInstance());
 			
-			Log.info(String.format("%s Soap Server ready @ %s\n", service, serverURI));
+			Log.info(String.format("%s Soap Server ready @ %s\n", domain + ":" + service, serverURI));
 			
-			DiscoverySingleton.getInstance().announce(service, serverURI);
+			DiscoverySingleton.getInstance().announce(domain + ":" + service, serverURI);
 		}
 		catch (Exception e) {
 			Log.info(e.getMessage());

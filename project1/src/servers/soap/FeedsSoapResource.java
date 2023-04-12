@@ -1,7 +1,6 @@
 package servers.soap;
 
 import api.Message;
-import api.User;
 import api.java.Feeds;
 import api.soap.FeedsException;
 import api.soap.SoapFeeds;

@@ -1,7 +1,6 @@
 package api.java;
 
 import api.Message;
-import api.User;
 
 import java.util.List;
 
@@ -12,14 +11,13 @@ public interface Feeds {
 	 * A message should be identified before publish it, by assigning an ID.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
-	 *
 	 * @param user user of the operation (format user@domain)
 	 * @param msg the message object to be posted to the server
 	 * @param pwd password of the user sending the message
-	 * @return	200 the unique numerical identifier for the posted message;
-	 *			404 if the publisher does not exist in the current domain
-	 *			403 if the pwd is not correct
-	 *			400 otherwise
+	 * @return 200 the unique numerical identifier for the posted message;
+	 * 404 if the publisher does not exist in the current domain
+	 * 403 if the pwd is not correct
+	 * 400 otherwise
 	 */
 	Result<Long> postMessage(String user, String pwd, Message msg);
 	
@@ -27,13 +25,12 @@ public interface Feeds {
 	 * Removes the message identified by mid from the feed of user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
-	 *
 	 * @param user user feed being accessed (format user@domain)
 	 * @param mid the identifier of the message to be deleted
 	 * @param pwd password of the user
-	 * @return	204 if ok
-	 *			403 if the pwd is not correct
-	 * 			404 is generated if the message does not exist in the server or if the user does not exist
+	 * @return 204 if ok
+	 * 403 if the pwd is not correct
+	 * 404 is generated if the message does not exist in the server or if the user does not exist
 	 */
 	Result<Void> removeFromPersonalFeed(String user, long mid, String pwd);
 	
@@ -61,13 +58,12 @@ public interface Feeds {
 	 * Subscribe a user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
-	 *
 	 * @param user the user subscribing (following) other user (format user@domain)
 	 * @param userSub the user to be subscribed (followed) (format user@domain)
 	 * @param pwd password of the user
-	 * @return	204 if ok
-	 * 			404 is generated if the user or the user to be subscribed does not exist
-	 * 			403 is generated if the pwd is not correct
+	 * @return 204 if ok
+	 * 404 is generated if the user or the user to be subscribed does not exist
+	 * 403 is generated if the pwd is not correct
 	 */
 	Result<Void> subUser(String user, String userSub, String pwd);
 	
@@ -75,23 +71,21 @@ public interface Feeds {
 	 * UnSubscribe a user
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
 	 * propagated to other domain)
-	 *
 	 * @param user the user unsubscribing (following) other user (format user@domain)
 	 * @param userSub the identifier of the user to be unsubscribed
 	 * @param pwd password of the user
-	 * @return 	204 if ok
-	 * 			404 is generated if the user or the user to be unsubscribed does not exist
-	 * 			403 is generated if the pwd is not correct
+	 * @return 204 if ok
+	 * 404 is generated if the user or the user to be unsubscribed does not exist
+	 * 403 is generated if the pwd is not correct
 	 */
 	Result<Void> unsubscribeUser(String user, String userSub, String pwd);
 	
 	
 	/**
 	 * Subscribed users.
-	 *
 	 * @param user user being accessed (format user@domain)
-	 * @return 	200 if ok
-	 * 			404 is generated if the user does not exist
+	 * @return 200 if ok
+	 * 404 is generated if the user does not exist
 	 */
 	Result<List<String>> listSubs(String user);
 	

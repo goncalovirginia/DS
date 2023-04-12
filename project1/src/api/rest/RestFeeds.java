@@ -1,8 +1,6 @@
 package api.rest;
 
 import api.Message;
-import api.User;
-import api.java.Result;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
