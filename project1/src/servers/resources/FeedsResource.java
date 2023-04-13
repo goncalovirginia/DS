@@ -13,7 +13,6 @@ import servers.Server;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -67,10 +66,8 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
-		Map<Long, Message> feed = userFeed.get(user);
-		if (feed == null) return Result.error(ErrorCode.NOT_FOUND);
-		Message removedMsg = feed.remove(mid);
-		if (removedMsg == null) return Result.error(ErrorCode.NOT_FOUND);
+		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
+		if (userFeed.get(user).remove(mid) == null) return Result.error(ErrorCode.NOT_FOUND);
 		
 		return Result.ok();
 	}
@@ -88,9 +85,8 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
 		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		Map<Long, Message> feed = userFeed.get(user);
-		if (feed == null) return Result.error(ErrorCode.NOT_FOUND);
-		Message msg = feed.get(mid);
+		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
+		Message msg = userFeed.get(user).get(mid);
 		if (msg == null) return Result.error(ErrorCode.NOT_FOUND);
 		
 		return Result.ok(msg);
@@ -136,9 +132,9 @@ public class FeedsResource implements Feeds {
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
 		if (subUserResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(userSub, new ConcurrentSkipListSet<>());
+		userSubscribers.putIfAbsent(userSub, new HashSet<>());
 		userSubscribers.get(userSub).add(user);
-		userSubscribedTo.putIfAbsent(user, new ConcurrentSkipListSet<>());
+		userSubscribedTo.putIfAbsent(user, new HashSet<>());
 		userSubscribedTo.get(user).add(userSub);
 		
 		return Result.ok();
