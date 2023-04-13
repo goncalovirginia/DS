@@ -58,6 +58,11 @@ public class FeedsRestClient extends RestClient implements Feeds {
 		return reTry(() -> clt_propagateMessage(message));
 	}
 	
+	@Override
+	public Result<Void> deleteUserData(String user) {
+		return reTry(() -> clt_deleteUserData(user));
+	}
+	
 	private Result<Void> clt_propagateMessage(Message message) {
 		Response r = target.path("propagate")
 				.request()
@@ -85,6 +90,15 @@ public class FeedsRestClient extends RestClient implements Feeds {
 		
 		return responseToResult(r, new GenericType<List<Message>>() {
 		});
+	}
+	
+	private Result<Void> clt_deleteUserData(String user) {
+		Response r = target.path("deleteData")
+				.path(user)
+				.request()
+				.delete();
+		
+		return responseToResult(r, Void.class);
 	}
 	
 }

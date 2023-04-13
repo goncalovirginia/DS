@@ -2,17 +2,26 @@ package servers.resources;
 
 import api.User;
 import api.java.Result;
+import api.java.Result.ErrorCode;
 import api.java.Users;
+import clients.FeedsClientFactory;
+import discovery.DiscoverySingleton;
+import servers.Server;
 
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class UsersResource implements Users {
 	
 	private static final Logger Log = Logger.getLogger(UsersResource.class.getName());
+	
+	private final ExecutorService threadPool = Executors.newCachedThreadPool();
 	
 	private final Map<String, User> users;
 	
@@ -26,12 +35,12 @@ public class UsersResource implements Users {
 		
 		if (user.getName() == null || user.getPwd() == null || user.getDisplayName() == null || user.getDomain() == null) {
 			Log.info("Invalid user.");
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		if (users.putIfAbsent(user.getName(), user) != null) {
 			Log.info("User already exists.");
-			return Result.error(Result.ErrorCode.CONFLICT);
+			return Result.error(ErrorCode.CONFLICT);
 		}
 		
 		return Result.ok(user.getName() + "@" + user.getDomain());
@@ -49,7 +58,7 @@ public class UsersResource implements Users {
 		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
 		
 		if (user.getName() != null && !name.equals(user.getName())) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Result<User> r = validateUserCredentials(name, pwd);
@@ -69,6 +78,17 @@ public class UsersResource implements Users {
 		if (!r.isOK()) return r;
 		
 		users.remove(name);
+		
+		threadPool.execute(() -> {
+			String nameAndDomain = name + "@" + Server.domain;
+			
+			FeedsClientFactory.get(DiscoverySingleton.getInstance().getURI(Server.domain + ":feeds"))
+					.deleteUserData(nameAndDomain);
+			
+			for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
+				FeedsClientFactory.get(uri).deleteUserData(nameAndDomain);
+			}
+		});
 		
 		return r;
 	}
@@ -94,19 +114,19 @@ public class UsersResource implements Users {
 	private Result<User> validateUserCredentials(String name, String password) {
 		if (name == null || password == null) {
 			Log.info("name or password null.");
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		User user = users.get(name);
 		
 		if (user == null) {
 			Log.info("User does not exist.");
-			return Result.error(Result.ErrorCode.NOT_FOUND);
+			return Result.error(ErrorCode.NOT_FOUND);
 		}
 		
 		if (!user.getPwd().equals(password)) {
 			Log.info("Password is incorrect.");
-			return Result.error(Result.ErrorCode.FORBIDDEN);
+			return Result.error(ErrorCode.FORBIDDEN);
 		}
 		
 		return Result.ok(user);

@@ -1,11 +1,11 @@
 package api.soap;
 
 import jakarta.xml.ws.WebFault;
-import jakarta.xml.ws.WebServiceException;
 
 @WebFault
-public class FeedsException extends WebServiceException {
+public class FeedsException extends Exception {
 	
+	private static final long serialVersionUID = 1L;
 	
 	public FeedsException() {
 		super("");
@@ -15,5 +15,4 @@ public class FeedsException extends WebServiceException {
 		super(errorMessage);
 	}
 	
-	private static final long serialVersionUID = 1L;
 }

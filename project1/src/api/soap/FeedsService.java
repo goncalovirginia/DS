@@ -103,4 +103,11 @@ public interface FeedsService {
 	 */
 	void propagateMessage(Message message) throws FeedsException;
 	
+	/**
+	 * Deletes all user data in the domain.
+	 * @param user user@domain
+	 * @return 204
+	 */
+	void deleteUserData(String user) throws FeedsException;
+	
 }

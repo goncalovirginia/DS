@@ -128,4 +128,13 @@ public interface RestFeeds {
 	@Path("/propagate")
 	void propagateMessage(Message message);
 	
+	/**
+	 * Deletes all user data in the domain.
+	 * @param user user@domain
+	 * @return 204
+	 */
+	@DELETE
+	@Path("/deleteData/{" + USER + "}")
+	void deleteUserData(@PathParam(USER) String user);
+	
 }

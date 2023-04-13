@@ -59,4 +59,9 @@ public class FeedsSoapResource extends SoapResource<FeedsException> implements F
 		fromJavaResult(feeds.propagateMessage(message));
 	}
 	
+	@Override
+	public void deleteUserData(String user) throws FeedsException {
+		fromJavaResult(feeds.deleteUserData(user));
+	}
+	
 }

@@ -92,8 +92,15 @@ public interface Feeds {
 	/**
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 * @param message propagated message
-	 * @return 200
+	 * @return 204
 	 */
 	Result<Void> propagateMessage(Message message);
+	
+	/**
+	 * Deletes all user data in the domain.
+	 * @param user user@domain
+	 * @return 204
+	 */
+	Result<Void> deleteUserData(String user);
 	
 }

@@ -4,6 +4,7 @@ import api.Message;
 import api.User;
 import api.java.Feeds;
 import api.java.Result;
+import api.java.Result.ErrorCode;
 import clients.FeedsClientFactory;
 import clients.UsersClientFactory;
 import discovery.DiscoverySingleton;
@@ -12,6 +13,7 @@ import servers.Server;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.logging.Logger;
 
 public class FeedsResource implements Feeds {
@@ -34,18 +36,18 @@ public class FeedsResource implements Feeds {
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
 		if (msg.getUser() == null || !msg.getUser().equals(nameAndDomain[0]) || msg.getDomain() == null || !msg.getDomain().equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Message newMsg = new Message(msg);
-		userFeed.putIfAbsent(user, new HashMap<>());
+		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
 		userFeed.get(user).put(newMsg.getId(), newMsg);
 		
 		propagateMessage(newMsg);
@@ -61,16 +63,16 @@ public class FeedsResource implements Feeds {
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
 		Map<Long, Message> feed = userFeed.get(user);
-		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (feed == null) return Result.error(ErrorCode.NOT_FOUND);
 		Message removedMsg = feed.remove(mid);
-		if (removedMsg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (removedMsg == null) return Result.error(ErrorCode.NOT_FOUND);
 		
 		return Result.ok();
 	}
@@ -86,12 +88,12 @@ public class FeedsResource implements Feeds {
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
-		if (userResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
 		
 		Map<Long, Message> feed = userFeed.get(user);
-		if (feed == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (feed == null) return Result.error(ErrorCode.NOT_FOUND);
 		Message msg = feed.get(mid);
-		if (msg == null) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (msg == null) return Result.error(ErrorCode.NOT_FOUND);
 		
 		return Result.ok(msg);
 	}
@@ -107,9 +109,9 @@ public class FeedsResource implements Feeds {
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
-		if (userResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userFeed.putIfAbsent(user, new HashMap<>());
+		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
 		List<Message> messages = new LinkedList<>();
 		
 		for (Message message : userFeed.get(user).values()) {
@@ -128,7 +130,7 @@ public class FeedsResource implements Feeds {
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
@@ -137,11 +139,11 @@ public class FeedsResource implements Feeds {
 		String[] subNameAndDomain = userSub.split("@");
 		
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
-		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (subUserResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(userSub, new HashSet<>());
+		userSubscribers.putIfAbsent(userSub, new ConcurrentSkipListSet<>());
 		userSubscribers.get(userSub).add(user);
-		userSubscribedTo.putIfAbsent(user, new HashSet<>());
+		userSubscribedTo.putIfAbsent(user, new ConcurrentSkipListSet<>());
 		userSubscribedTo.get(user).add(userSub);
 		
 		return Result.ok();
@@ -154,7 +156,7 @@ public class FeedsResource implements Feeds {
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.BAD_REQUEST);
+			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
@@ -163,7 +165,7 @@ public class FeedsResource implements Feeds {
 		String[] subNameAndDomain = userSub.split("@");
 		
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
-		if (subUserResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (subUserResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
 		userSubscribers.putIfAbsent(userSub, new HashSet<>());
 		userSubscribers.get(userSub).remove(user);
@@ -180,11 +182,11 @@ public class FeedsResource implements Feeds {
 		String[] nameAndDomain = user.split("@");
 		
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(Result.ErrorCode.NOT_FOUND);
+			return Result.error(ErrorCode.NOT_FOUND);
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
-		if (userResult.error().equals(Result.ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
 		userSubscribedTo.putIfAbsent(user, new HashSet<>());
 		
@@ -193,14 +195,26 @@ public class FeedsResource implements Feeds {
 	
 	@Override
 	public Result<Void> propagateMessage(Message message) {
+		Log.info("propagateMessage : message = " + message);
+		
 		Set<String> subscribers = userSubscribers.get(message.getUser() + "@" + message.getDomain());
 		
 		if (subscribers != null) {
 			for (String subscriber : subscribers) {
-				userFeed.putIfAbsent(subscriber, new HashMap<>());
+				userFeed.putIfAbsent(subscriber, new ConcurrentHashMap<>());
 				userFeed.get(subscriber).put(message.getId(), message);
 			}
 		}
+		
+		return Result.ok();
+	}
+	
+	public Result<Void> deleteUserData(String user) {
+		Log.info("deleteUserData : user = " + user);
+		
+		userFeed.remove(user);
+		userSubscribers.remove(user);
+		userSubscribedTo.remove(user);
 		
 		return Result.ok();
 	}
