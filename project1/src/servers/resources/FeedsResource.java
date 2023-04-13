@@ -14,11 +14,15 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class FeedsResource implements Feeds {
 	
 	private static final Logger Log = Logger.getLogger(FeedsResource.class.getName());
+	
+	private final ExecutorService threadPool = Executors.newCachedThreadPool();
 	
 	private final Map<String, Map<Long, Message>> userFeed;
 	private final Map<String, Set<String>> userSubscribers, userSubscribedTo;
@@ -35,10 +39,7 @@ public class FeedsResource implements Feeds {
 		
 		String[] nameAndDomain = user.split("@");
 		
-		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(ErrorCode.BAD_REQUEST);
-		}
-		
+		if (!nameAndDomain[1].equals(Server.domain)) return Result.error(ErrorCode.BAD_REQUEST);
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
@@ -62,10 +63,7 @@ public class FeedsResource implements Feeds {
 		
 		String[] nameAndDomain = user.split("@");
 		
-		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(ErrorCode.BAD_REQUEST);
-		}
-		
+		if (!nameAndDomain[1].equals(Server.domain)) return Result.error(ErrorCode.BAD_REQUEST);
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
@@ -88,7 +86,7 @@ public class FeedsResource implements Feeds {
 		}
 		
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
-		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(Result.ErrorCode.NOT_FOUND);
+		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
 		Map<Long, Message> feed = userFeed.get(user);
 		if (feed == null) return Result.error(ErrorCode.NOT_FOUND);
@@ -129,10 +127,7 @@ public class FeedsResource implements Feeds {
 		
 		String[] nameAndDomain = user.split("@");
 		
-		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(ErrorCode.BAD_REQUEST);
-		}
-		
+		if (!nameAndDomain[1].equals(Server.domain)) return Result.error(ErrorCode.BAD_REQUEST);
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
@@ -155,10 +150,7 @@ public class FeedsResource implements Feeds {
 		
 		String[] nameAndDomain = user.split("@");
 		
-		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(ErrorCode.BAD_REQUEST);
-		}
-		
+		if (!nameAndDomain[1].equals(Server.domain)) return Result.error(ErrorCode.BAD_REQUEST);
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
@@ -209,6 +201,7 @@ public class FeedsResource implements Feeds {
 		return Result.ok();
 	}
 	
+	@Override
 	public Result<Void> deleteUserData(String user) {
 		Log.info("deleteUserData : user = " + user);
 		
@@ -220,13 +213,12 @@ public class FeedsResource implements Feeds {
 	}
 	
 	private Result<User> validateUserCredentials(String domain, String userId, String password) {
-		URI uri = DiscoverySingleton.getInstance().getURI(domain + ":users");
-		return UsersClientFactory.get(uri).getUser(userId, password);
+		return UsersClientFactory.get(DiscoverySingleton.getInstance().getURI(domain + ":users")).getUser(userId, password);
 	}
 	
 	private void propagateMessageToOtherDomains(Message message) {
 		for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
-			FeedsClientFactory.get(uri).propagateMessage(message);
+			threadPool.execute(() -> FeedsClientFactory.get(uri).propagateMessage(message));
 		}
 	}
 	
