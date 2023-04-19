@@ -33,7 +33,7 @@ public class UsersResource implements Users {
 	public Result<String> createUser(User user) {
 		Log.info("createUser : " + user);
 		
-		if (user.getName() == null || user.getPwd() == null || user.getDisplayName() == null || user.getDomain() == null) {
+		if (userObjectInvalid(user)) {
 			Log.info("Invalid user.");
 			return Result.error(ErrorCode.BAD_REQUEST);
 		}
@@ -107,6 +107,10 @@ public class UsersResource implements Users {
 		}
 		
 		return Result.ok(matches);
+	}
+	
+	private boolean userObjectInvalid(User user) {
+		return user.getName() == null || user.getPwd() == null || user.getDisplayName() == null || user.getDomain() == null;
 	}
 	
 	private Result<User> validateUserCredentials(String name, String password) {

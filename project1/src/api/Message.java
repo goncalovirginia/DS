@@ -2,6 +2,8 @@ package api;
 
 import servers.Server;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Represents a message in the system.
  */
@@ -9,7 +11,7 @@ public class Message {
 	
 	private static final long BASE = Server.serverId * 100000000000000000L;
 	
-	private static long count = 0;
+	private static final AtomicLong count = new AtomicLong();
 	
 	private long id;
 	private String user;
@@ -31,7 +33,7 @@ public class Message {
 	
 	public Message(Message message) {
 		super();
-		this.id = BASE + count++;
+		this.id = BASE + count.getAndIncrement();
 		this.user = message.getUser();
 		this.domain = message.getDomain();
 		this.creationTime = System.currentTimeMillis();

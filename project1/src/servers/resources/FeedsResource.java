@@ -24,12 +24,12 @@ public class FeedsResource implements Feeds {
 	private final ExecutorService threadPool = Executors.newCachedThreadPool();
 	
 	private final Map<String, Map<Long, Message>> userFeed;
-	private final Map<String, Set<String>> userSubscribers, userSubscribedTo;
+	private final Map<String, Set<String>> userSubscribedTo, userSubscribers;
 	
 	public FeedsResource() {
 		userFeed = new ConcurrentHashMap<>();
-		userSubscribers = new ConcurrentHashMap<>();
 		userSubscribedTo = new ConcurrentHashMap<>();
+		userSubscribers = new ConcurrentHashMap<>();
 	}
 	
 	@Override
@@ -47,8 +47,11 @@ public class FeedsResource implements Feeds {
 		}
 		
 		Message newMsg = new Message(msg);
-		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
-		userFeed.get(user).put(newMsg.getId(), newMsg);
+		
+		synchronized (userFeed) {
+			userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
+			userFeed.get(user).put(newMsg.getId(), newMsg);
+		}
 		
 		propagateMessage(newMsg);
 		propagateMessageToOtherDomains(newMsg);
@@ -66,8 +69,8 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], pwd);
 		if (!userResult.isOK()) return Result.error(userResult.error());
 		
-		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
-		if (userFeed.get(user).remove(mid) == null) return Result.error(ErrorCode.NOT_FOUND);
+		Map<Long, Message> feed = userFeed.get(user);
+		if (feed == null || feed.remove(mid) == null) return Result.error(ErrorCode.NOT_FOUND);
 		
 		return Result.ok();
 	}
@@ -85,11 +88,11 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
 		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
-		Message msg = userFeed.get(user).get(mid);
-		if (msg == null) return Result.error(ErrorCode.NOT_FOUND);
+		Map<Long, Message> feed = userFeed.get(user);
+		Message message;
+		if (feed == null || (message = feed.get(mid)) == null) return Result.error(ErrorCode.NOT_FOUND);
 		
-		return Result.ok(msg);
+		return Result.ok(message);
 	}
 	
 	@Override
@@ -105,12 +108,14 @@ public class FeedsResource implements Feeds {
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
 		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
+		Map<Long, Message> feed = userFeed.get(user);
 		List<Message> messages = new LinkedList<>();
 		
-		for (Message message : userFeed.get(user).values()) {
-			if (message.getCreationTime() > time) {
-				messages.add(message);
+		if (feed != null) {
+			for (Message message : feed.values()) {
+				if (message.getCreationTime() > time) {
+					messages.add(message);
+				}
 			}
 		}
 		
@@ -132,10 +137,14 @@ public class FeedsResource implements Feeds {
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
 		if (subUserResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(userSub, new HashSet<>());
-		userSubscribers.get(userSub).add(user);
-		userSubscribedTo.putIfAbsent(user, new HashSet<>());
-		userSubscribedTo.get(user).add(userSub);
+		synchronized (userSubscribedTo) {
+			userSubscribedTo.putIfAbsent(user, ConcurrentHashMap.newKeySet());
+			userSubscribedTo.get(user).add(userSub);
+		}
+		synchronized (userSubscribers) {
+			userSubscribers.putIfAbsent(userSub, ConcurrentHashMap.newKeySet());
+			userSubscribers.get(userSub).add(user);
+		}
 		
 		return Result.ok();
 	}
@@ -155,10 +164,10 @@ public class FeedsResource implements Feeds {
 		Result<User> subUserResult = validateUserCredentials(subNameAndDomain[1], subNameAndDomain[0], "");
 		if (subUserResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userSubscribers.putIfAbsent(userSub, new HashSet<>());
-		userSubscribers.get(userSub).remove(user);
-		userSubscribedTo.putIfAbsent(user, new HashSet<>());
-		userSubscribedTo.get(user).remove(userSub);
+		Set<String> subscribedTo = userSubscribedTo.get(user);
+		if (subscribedTo != null) subscribedTo.remove(userSub);
+		Set<String> subscribers = userSubscribers.get(userSub);
+		if (subscribers != null) subscribers.remove(user);
 		
 		return Result.ok();
 	}
@@ -169,16 +178,14 @@ public class FeedsResource implements Feeds {
 		
 		String[] nameAndDomain = user.split("@");
 		
-		if (!nameAndDomain[1].equals(Server.domain)) {
-			return Result.error(ErrorCode.NOT_FOUND);
-		}
-		
+		if (!nameAndDomain[1].equals(Server.domain)) return Result.error(ErrorCode.NOT_FOUND);
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
 		if (userResult.error().equals(ErrorCode.NOT_FOUND)) return Result.error(ErrorCode.NOT_FOUND);
 		
-		userSubscribedTo.putIfAbsent(user, new HashSet<>());
+		Set<String> subscribedTo = userSubscribedTo.get(user);
+		List<String> subscribedToList = subscribedTo == null ? new ArrayList<>() : subscribedTo.stream().toList();
 		
-		return Result.ok(userSubscribedTo.get(user).stream().toList());
+		return Result.ok(subscribedToList);
 	}
 	
 	@Override
@@ -188,9 +195,11 @@ public class FeedsResource implements Feeds {
 		Set<String> subscribers = userSubscribers.get(message.getUser() + "@" + message.getDomain());
 		
 		if (subscribers != null) {
-			for (String subscriber : subscribers) {
-				userFeed.putIfAbsent(subscriber, new ConcurrentHashMap<>());
-				userFeed.get(subscriber).put(message.getId(), message);
+			synchronized (userFeed) {
+				for (String subscriber : subscribers) {
+					userFeed.putIfAbsent(subscriber, new ConcurrentHashMap<>());
+					userFeed.get(subscriber).put(message.getId(), message);
+				}
 			}
 		}
 		
