@@ -16,7 +16,7 @@ public abstract class RestClient extends Client {
 	protected final URI serverURI;
 	protected final jakarta.ws.rs.client.Client client;
 	protected final ClientConfig config;
-	protected WebTarget target;
+	protected final WebTarget target;
 	
 	protected RestClient(URI serverURI, String path) {
 		this.serverURI = serverURI;
