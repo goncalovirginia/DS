@@ -1,12 +1,14 @@
-package servers.soap;
+package servers.rest;
 
-public class FeedsSoapServer extends SoapServer {
+import java.io.IOException;
+
+public class FeedsProxyRestServer extends RestServer {
 
     public static final int PORT = 8080;
     public static final String SERVICE = "feeds";
 
-    private FeedsSoapServer() {
-        super(FeedsSoapServer.class.getName(), PORT, SERVICE, FeedsSoapResource.class);
+    private FeedsProxyRestServer() {
+        super(FeedsRestServer.class.getName(), PORT, SERVICE, FeedsProxyRestResource.class);
     }
 
     public static void main(String[] args) {
@@ -18,7 +20,6 @@ public class FeedsSoapServer extends SoapServer {
         serverId = Long.parseLong(args[1]);
         secret = args[2];
 
-        new FeedsSoapServer().run();
+        new FeedsProxyRestServer().run();
     }
-
 }

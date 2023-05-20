@@ -1,17 +1,20 @@
-rm -f *.jks
 
-keytool -genkey -alias users -keyalg RSA -validity 365 -keystore ./users.jks -storetype pkcs12 << EOF
-123users
-123users
-Users.Users
+NAME="users0-ourorg0"
+
+rm *.jks
+
+keytool -genkey -alias "$NAME" -keyalg RSA -validity 365 -keystore ./"$NAME".jks -storetype pkcs12 << 'EOF'
+$NAME
+$NAME
+$NAME.$NAME
 TP2
 SD2223
 LX
 LX
 PT
 yes
-123users
-123users
+$NAME
+$NAME
 EOF
 
 echo
@@ -20,13 +23,13 @@ echo "Exporting Certificates"
 echo
 echo
 
-keytool -exportcert -alias users -keystore users.jks -file users.cert << EOF
-123users
+keytool -exportcert -alias "$NAME" -keystore "$NAME".jks -file "$NAME".cert << 'EOF'
+$NAME
 EOF
 
 echo "Creating Client Truststore"
 cp cacerts client-ts.jks
-keytool -importcert -file users.cert -alias users -keystore client-ts.jks << EOF
+keytool -importcert -file "$NAME".cert -alias "$NAME" -keystore client-ts.jks << EOF
 changeit
 yes
 EOF
