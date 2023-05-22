@@ -9,14 +9,9 @@ import javax.net.ssl.SSLContext;
 import java.net.InetAddress;
 import java.net.URI;
 
-abstract class RestServer extends Server {
+public abstract class RestServer extends Server {
 
     private static final String SERVER_URI_FMT = "https://%s:%s/rest";
-
-    static {
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s\n");
-    }
 
     protected RestServer(String className, int port, String service, Class<?> resource) {
         super(className, port, service, resource);
@@ -27,8 +22,8 @@ abstract class RestServer extends Server {
             ResourceConfig config = new ResourceConfig();
             config.register(resource);
 
-            String ip = InetAddress.getLocalHost().getHostName();
-            String serverURI = String.format(SERVER_URI_FMT, ip, port);
+            String hostName = InetAddress.getLocalHost().getHostName();
+            String serverURI = String.format(SERVER_URI_FMT, hostName, port);
             JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config, SSLContext.getDefault());
 
             Log.info(String.format("%s Server ready @ %s\n", domain + ":" + service, serverURI));

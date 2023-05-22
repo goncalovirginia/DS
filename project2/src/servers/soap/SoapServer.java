@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-abstract class SoapServer extends Server {
+public abstract class SoapServer extends Server {
 
     public static final String SERVER_BASE_URI = "https://%s:%s/soap";
 
@@ -28,9 +28,9 @@ abstract class SoapServer extends Server {
 
     protected void run() {
         try {
-            String ip = InetAddress.getLocalHost().getHostName();
+            String hostName = InetAddress.getLocalHost().getHostName();
 
-            HttpsServer server = HttpsServer.create(new InetSocketAddress(ip, port), 0);
+            HttpsServer server = HttpsServer.create(new InetSocketAddress(hostName, port), 0);
             server.setExecutor(Executors.newCachedThreadPool());
             server.setHttpsConfigurator(new HttpsConfigurator(SSLContext.getDefault()));
 
@@ -39,7 +39,7 @@ abstract class SoapServer extends Server {
 
             server.start();
 
-            String serverURI = String.format(SERVER_BASE_URI, ip, port);
+            String serverURI = String.format(SERVER_BASE_URI, hostName, port);
 
             Log.info(String.format("%s Soap Server ready @ %s\n", domain + ":" + service, serverURI));
 

@@ -1,20 +1,15 @@
+#rm *.jks
 
-NAME="users0-ourorg0"
-
-rm *.jks
-
-keytool -genkey -alias "$NAME" -keyalg RSA -validity 365 -keystore ./"$NAME".jks -storetype pkcs12 << 'EOF'
-$NAME
-$NAME
-$NAME.$NAME
+keytool -genkey -alias feeds2-ourorg2 -ext SAN=dns:feeds2-ourorg2 -keyalg RSA -validity 365 -keystore ./feeds2-ourorg2.jks -storetype pkcs12 << 'EOF'
+feeds2-ourorg2
+feeds2-ourorg2
+feeds2-ourorg2.feeds2-ourorg2
 TP2
 SD2223
 LX
 LX
 PT
 yes
-$NAME
-$NAME
 EOF
 
 echo
@@ -23,13 +18,12 @@ echo "Exporting Certificates"
 echo
 echo
 
-keytool -exportcert -alias "$NAME" -keystore "$NAME".jks -file "$NAME".cert << 'EOF'
-$NAME
+keytool -exportcert -alias feeds2-ourorg2 -keystore feeds2-ourorg2.jks -file feeds2-ourorg2.cert << 'EOF'
+feeds2-ourorg2
 EOF
 
 echo "Creating Client Truststore"
-cp cacerts client-ts.jks
-keytool -importcert -file "$NAME".cert -alias "$NAME" -keystore client-ts.jks << EOF
+keytool -importcert -file feeds2-ourorg2.cert -alias feeds2-ourorg2 -keystore client-ts.jks << EOF
 changeit
 yes
 EOF

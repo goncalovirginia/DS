@@ -13,10 +13,6 @@ public abstract class Client {
     protected static final Logger Log = Logger.getLogger(Client.class.getName());
     protected static final int READ_TIMEOUT = 10000, CONNECT_TIMEOUT = 10000, RETRY_SLEEP = 100, MAX_RETRIES = 3;
 
-    static {
-        HttpsURLConnection.setDefaultHostnameVerifier(new InsecureHostnameVerifier());
-    }
-
     protected <T> T reTry(Supplier<T> func) {
         for (int i = 0; i < MAX_RETRIES; i++) {
             try {
