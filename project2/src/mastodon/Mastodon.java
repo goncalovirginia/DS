@@ -283,12 +283,12 @@ public class Mastodon implements Feeds {
 	}
 
 	@Override
-	public Result<Void> propagateMessage(Message message) {
+	public Result<Void> propagateMessage(Message message, String secret) {
 		return error(NOT_IMPLEMENTED);
 	}
 
 	@Override
-	public Result<Void> deleteUserData(String user) {
+	public Result<Void> deleteUserData(String user, String secret) {
 		return error(NOT_IMPLEMENTED);
 	}
 

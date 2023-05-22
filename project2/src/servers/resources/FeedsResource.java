@@ -56,7 +56,7 @@ public class FeedsResource implements Feeds {
 			userFeed.get(user).put(newMsg.getId(), newMsg);
 		}
 
-		propagateMessage(newMsg);
+		propagateMessage(newMsg, Server.secret);
 		propagateMessageToOtherDomains(newMsg);
 
 		return Result.ok(newMsg.getId());
@@ -189,8 +189,10 @@ public class FeedsResource implements Feeds {
 	}
 
 	@Override
-	public Result<Void> propagateMessage(Message message) {
+	public Result<Void> propagateMessage(Message message, String secret) {
 		Log.info("propagateMessage : message = " + message);
+
+		if (!secret.equals(Server.secret)) return Result.error(ErrorCode.FORBIDDEN);
 
 		Set<String> subscribers = userSubscribers.get(message.getUser() + "@" + message.getDomain());
 
@@ -207,8 +209,10 @@ public class FeedsResource implements Feeds {
 	}
 
 	@Override
-	public Result<Void> deleteUserData(String user) {
+	public Result<Void> deleteUserData(String user, String secret) {
 		Log.info("deleteUserData : user = " + user);
+
+		if (!secret.equals(Server.secret)) return Result.error(ErrorCode.FORBIDDEN);
 
 		userFeed.remove(user);
 		userSubscribers.remove(user);
@@ -223,7 +227,7 @@ public class FeedsResource implements Feeds {
 
 	private void propagateMessageToOtherDomains(Message message) {
 		for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
-			threadPool.execute(() -> FeedsClientFactory.get(uri).propagateMessage(message));
+			threadPool.execute(() -> FeedsClientFactory.get(uri).propagateMessage(message, Server.secret));
 		}
 	}
 

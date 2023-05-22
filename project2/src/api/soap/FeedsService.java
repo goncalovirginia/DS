@@ -107,16 +107,18 @@ public interface FeedsService {
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
 	 * @param message propagated message
+	 * @param secret secret string authenticating servers
 	 * @return OK
 	 */
-	void propagateMessage(Message message) throws FeedsException;
+	void propagateMessage(Message message, String secret) throws FeedsException;
 
 	/**
 	 * Deletes all user data in the domain.
 	 *
 	 * @param user user@domain
+	 * @param secret secret string authenticating servers
 	 * @return 204
 	 */
-	void deleteUserData(String user) throws FeedsException;
+	void deleteUserData(String user, String secret) throws FeedsException;
 
 }

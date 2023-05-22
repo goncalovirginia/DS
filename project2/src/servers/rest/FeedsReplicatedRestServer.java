@@ -1,12 +1,12 @@
 package servers.rest;
 
-public class FeedsProxyRestServer extends RestServer {
+public class FeedsReplicatedRestServer extends RestServer {
 
 	public static final int PORT = 8080;
 	public static final String SERVICE = "feeds";
 
-	private FeedsProxyRestServer() {
-		super(FeedsProxyRestServer.class.getName(), PORT, SERVICE, FeedsProxyRestResource.class);
+	protected FeedsReplicatedRestServer() {
+		super(FeedsReplicatedRestServer.class.getName(), PORT, SERVICE, FeedsReplicatedRestResource.class);
 	}
 
 	public static void main(String[] args) {
@@ -18,7 +18,7 @@ public class FeedsProxyRestServer extends RestServer {
 		serverId = Long.parseLong(args[1]);
 		secret = args[2];
 
-		new FeedsProxyRestServer().run();
+		new FeedsReplicatedRestServer().run();
 	}
 
 }

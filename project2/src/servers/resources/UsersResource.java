@@ -82,10 +82,10 @@ public class UsersResource implements Users {
 		String nameAndDomain = name + "@" + Server.domain;
 
 		threadPool.execute(() -> FeedsClientFactory.get(DiscoverySingleton.getInstance().getURI(Server.domain + ":feeds"))
-				.deleteUserData(nameAndDomain));
+				.deleteUserData(nameAndDomain, Server.secret));
 
 		for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
-			threadPool.execute(() -> FeedsClientFactory.get(uri).deleteUserData(nameAndDomain));
+			threadPool.execute(() -> FeedsClientFactory.get(uri).deleteUserData(nameAndDomain, Server.secret));
 		}
 
 		return r;

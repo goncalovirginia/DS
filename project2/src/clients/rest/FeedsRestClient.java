@@ -54,17 +54,18 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	}
 
 	@Override
-	public Result<Void> propagateMessage(Message message) {
-		return reTry(() -> clt_propagateMessage(message));
+	public Result<Void> propagateMessage(Message message, String secret) {
+		return reTry(() -> clt_propagateMessage(message, secret));
 	}
 
 	@Override
-	public Result<Void> deleteUserData(String user) {
-		return reTry(() -> clt_deleteUserData(user));
+	public Result<Void> deleteUserData(String user, String secret) {
+		return reTry(() -> clt_deleteUserData(user, secret));
 	}
 
-	private Result<Void> clt_propagateMessage(Message message) {
+	private Result<Void> clt_propagateMessage(Message message, String secret) {
 		Response r = target.path("propagate")
+				.queryParam("secret", secret)
 				.request()
 				.put(Entity.entity(message, MediaType.APPLICATION_JSON));
 
@@ -92,9 +93,10 @@ public class FeedsRestClient extends RestClient implements Feeds {
 		});
 	}
 
-	private Result<Void> clt_deleteUserData(String user) {
+	private Result<Void> clt_deleteUserData(String user, String secret) {
 		Response r = target.path("deleteData")
 				.path(user)
+				.queryParam("secret", secret)
 				.request()
 				.delete();
 

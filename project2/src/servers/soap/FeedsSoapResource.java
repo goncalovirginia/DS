@@ -55,13 +55,13 @@ public class FeedsSoapResource extends SoapResource<FeedsException> implements F
 	}
 
 	@Override
-	public void propagateMessage(Message message) throws FeedsException {
-		fromJavaResult(feeds.propagateMessage(message));
+	public void propagateMessage(Message message, String secret) throws FeedsException {
+		fromJavaResult(feeds.propagateMessage(message, secret));
 	}
 
 	@Override
-	public void deleteUserData(String user) throws FeedsException {
-		fromJavaResult(feeds.deleteUserData(user));
+	public void deleteUserData(String user, String secret) throws FeedsException {
+		fromJavaResult(feeds.deleteUserData(user, secret));
 	}
 
 }

@@ -10,11 +10,12 @@ public class UsersSoapServer extends SoapServer {
 	}
 
 	public static void main(String[] args) {
-		if (args.length < 1) {
-			Log.info("Arguments: <Domain>");
+		if (args.length < 2) {
+			Log.info("Arguments: <Domain> <Secret>");
 		}
 
 		domain = args[0];
+		secret = args[1];
 
 		new UsersSoapServer().run();
 	}

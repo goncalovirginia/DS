@@ -100,16 +100,18 @@ public interface Feeds {
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
 	 * @param message propagated message
+	 * @param secret secret string authenticating servers
 	 * @return 204
 	 */
-	Result<Void> propagateMessage(Message message);
+	Result<Void> propagateMessage(Message message, String secret);
 
 	/**
 	 * Deletes all user data in the domain.
 	 *
 	 * @param user user@domain
+	 * @param secret secret string authenticating servers
 	 * @return 204
 	 */
-	Result<Void> deleteUserData(String user);
+	Result<Void> deleteUserData(String user, String secret);
 
 }

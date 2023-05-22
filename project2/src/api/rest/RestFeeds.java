@@ -15,6 +15,7 @@ public interface RestFeeds {
 	String TIME = "time";
 	String DOMAIN = "domain";
 	String USERSUB = "userSub";
+	String SECRET = "secret";
 
 	String PATH = "/feeds";
 
@@ -130,20 +131,22 @@ public interface RestFeeds {
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
 	 * @param message propagated message
+	 * @param secret secret string authenticating servers
 	 * @return 200
 	 */
 	@PUT
 	@Path("/propagate")
-	void propagateMessage(Message message);
+	void propagateMessage(Message message, @QueryParam(SECRET) String secret);
 
 	/**
 	 * Deletes all user data in the domain.
 	 *
 	 * @param user user@domain
+	 * @param secret secret string authenticating servers
 	 * @return 204
 	 */
 	@DELETE
 	@Path("/deleteData/{" + USER + "}")
-	void deleteUserData(@PathParam(USER) String user);
+	void deleteUserData(@PathParam(USER) String user, @QueryParam(SECRET) String secret);
 
 }

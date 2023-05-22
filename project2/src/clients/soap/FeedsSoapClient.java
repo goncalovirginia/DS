@@ -65,13 +65,13 @@ public class FeedsSoapClient extends SoapClient implements Feeds {
 	}
 
 	@Override
-	public Result<Void> propagateMessage(Message message) {
-		return reTry(() -> responseToResult(() -> stub().propagateMessage(message)));
+	public Result<Void> propagateMessage(Message message, String secret) {
+		return reTry(() -> responseToResult(() -> stub().propagateMessage(message, secret)));
 	}
 
 	@Override
-	public Result<Void> deleteUserData(String user) {
-		return reTry(() -> responseToResult(() -> stub().deleteUserData(user)));
+	public Result<Void> deleteUserData(String user, String secret) {
+		return reTry(() -> responseToResult(() -> stub().deleteUserData(user, secret)));
 	}
 
 }
