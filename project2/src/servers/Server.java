@@ -1,8 +1,5 @@
 package servers;
 
-import tls.InsecureHostnameVerifier;
-
-import javax.net.ssl.HttpsURLConnection;
 import java.util.logging.Logger;
 
 public abstract class Server {

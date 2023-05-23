@@ -131,7 +131,7 @@ public interface RestFeeds {
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
 	 * @param message propagated message
-	 * @param secret secret string authenticating servers
+	 * @param secret  secret string authenticating servers
 	 * @return 200
 	 */
 	@PUT
@@ -141,7 +141,7 @@ public interface RestFeeds {
 	/**
 	 * Deletes all user data in the domain.
 	 *
-	 * @param user user@domain
+	 * @param user   user@domain
 	 * @param secret secret string authenticating servers
 	 * @return 204
 	 */
