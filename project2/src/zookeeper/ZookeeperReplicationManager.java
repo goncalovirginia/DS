@@ -82,11 +82,11 @@ public class ZookeeperReplicationManager {
 	}
 
 	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
-		FeedsOperation operation = new FeedsOperation(versionCounter.getAndIncrement(), type, args);
+		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
 		CountDownLatch countDownLatch = new CountDownLatch(secondaryURIs.size());
 
 		for (String uri : secondaryURIs.values()) {
-			threadPool.submit(() -> {
+			threadPool.execute(() -> {
 				FeedsClientFactory.get(URI.create(uri)).replicateOperation(operation, Server.secret);
 				countDownLatch.countDown();
 			});
@@ -110,11 +110,11 @@ public class ZookeeperReplicationManager {
 	}
 
 	public static long getVersion() {
-		return versionCounter.get() - 1;
+		return versionCounter.get();
 	}
 
-	public static void updateVersion(FeedsOperation operation) {
-		versionCounter.set(Math.max(operation.version(), versionCounter.get()));
+	public static void updateVersion() {
+		versionCounter.incrementAndGet();
 	}
 
 }

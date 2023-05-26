@@ -57,7 +57,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 	@Override
 	public List<Message> getMessages(long version, String user, long time) {
 		if (version > ZookeeperReplicationManager.getVersion()) {
-			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s", user));
+			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s?time=%s", user, time));
 		}
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
@@ -126,7 +126,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			case propagateMessage -> feeds.propagateMessage(JSON.decode(args.get(0), Message.class), args.get(1));
 			case deleteUserData -> feeds.deleteUserData(args.get(0), args.get(1));
 		}
-		ZookeeperReplicationManager.updateVersion(operation);
+		ZookeeperReplicationManager.updateVersion();
 	}
 
 }
