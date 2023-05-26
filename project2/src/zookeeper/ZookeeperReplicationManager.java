@@ -83,7 +83,6 @@ public class ZookeeperReplicationManager {
 
 	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
 		FeedsOperation operation = new FeedsOperation(versionCounter.getAndIncrement(), type, args);
-
 		CountDownLatch countDownLatch = new CountDownLatch(secondaryURIs.size());
 
 		for (String uri : secondaryURIs.values()) {
@@ -92,11 +91,9 @@ public class ZookeeperReplicationManager {
 				countDownLatch.countDown();
 			});
 		}
-
 		try {
 			countDownLatch.await(COUNTDOWNLATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		} catch (InterruptedException ignored) {
 		}
 	}
 

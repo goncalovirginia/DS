@@ -9,7 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class Message {
 
-	private static final long BASE = Server.serverId * 100000000000000000L;
+	private static final long BASE = 100000000000000000L;
+	private static final long SERVER_BASE = Server.serverId * BASE;
 
 	private static final AtomicLong count = new AtomicLong();
 
@@ -33,11 +34,22 @@ public class Message {
 
 	public Message(Message message) {
 		super();
-		this.id = BASE + count.getAndIncrement();
+		this.id = SERVER_BASE + count.getAndIncrement();
 		this.user = message.getUser();
 		this.domain = message.getDomain();
 		this.creationTime = System.currentTimeMillis();
 		this.text = message.getText();
+	}
+
+	public void create() {
+		if (notCreated()) {
+			this.id = SERVER_BASE + count.getAndIncrement();
+			this.creationTime = System.currentTimeMillis();
+		}
+	}
+
+	public boolean notCreated() {
+		return this.id < BASE;
 	}
 
 	public long getId() {
@@ -85,4 +97,5 @@ public class Message {
 		return "Message [id=" + id + ", user=" + user + ", domain=" + domain + ", creationTime=" + creationTime
 				+ ", text=" + text + "]";
 	}
+
 }

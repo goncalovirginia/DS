@@ -51,17 +51,17 @@ public class FeedsResource implements Feeds {
 			return Result.error(ErrorCode.BAD_REQUEST);
 		}
 
-		Message newMsg = new Message(msg);
+		msg.create();
 
 		synchronized (userFeed) {
 			userFeed.putIfAbsent(user, new ConcurrentHashMap<>());
-			userFeed.get(user).put(newMsg.getId(), newMsg);
+			userFeed.get(user).put(msg.getId(), msg);
 		}
 
-		propagateMessage(newMsg, Server.secret);
-		propagateMessageToOtherDomains(newMsg);
+		propagateMessage(msg, Server.secret);
+		propagateMessageToOtherDomains(msg);
 
-		return Result.ok(newMsg.getId());
+		return Result.ok(msg.getId());
 	}
 
 	@Override
