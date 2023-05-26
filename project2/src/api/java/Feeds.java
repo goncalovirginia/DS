@@ -1,6 +1,10 @@
 package api.java;
 
 import api.Message;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import zookeeper.FeedsOperation;
 
 import java.util.List;
 
@@ -86,7 +90,6 @@ public interface Feeds {
 	 */
 	Result<Void> unsubscribeUser(String user, String userSub, String pwd);
 
-
 	/**
 	 * Subscribed users.
 	 *
@@ -113,5 +116,7 @@ public interface Feeds {
 	 * @return 204
 	 */
 	Result<Void> deleteUserData(String user, String secret);
+
+	Result<Void> replicateOperation(FeedsOperation operation, String secret);
 
 }

@@ -6,6 +6,7 @@ import api.java.Result;
 import api.soap.FeedsService;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
+import zookeeper.FeedsOperation;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
@@ -72,6 +73,11 @@ public class FeedsSoapClient extends SoapClient implements Feeds {
 	@Override
 	public Result<Void> deleteUserData(String user, String secret) {
 		return reTry(() -> responseToResult(() -> stub().deleteUserData(user, secret)));
+	}
+
+	@Override
+	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
+		return Result.error(Result.ErrorCode.NOT_IMPLEMENTED);
 	}
 
 }

@@ -41,7 +41,7 @@ public abstract class SoapClient extends Client {
 			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
 		} catch (Exception e) {
 			Log.info(e.getMessage());
-			return Result.error(Result.ErrorCode.INTERNAL_ERROR);
+			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -53,7 +53,7 @@ public abstract class SoapClient extends Client {
 			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
 		} catch (Exception e) {
 			Log.info(e.getMessage());
-			return Result.error(Result.ErrorCode.INTERNAL_ERROR);
+			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
 

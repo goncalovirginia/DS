@@ -9,6 +9,8 @@ import clients.FeedsClientFactory;
 import clients.UsersClientFactory;
 import discovery.DiscoverySingleton;
 import servers.Server;
+import zookeeper.FeedsOperation;
+import zookeeper.ZookeeperReplicationManager;
 
 import java.net.URI;
 import java.util.LinkedList;
@@ -221,11 +223,18 @@ public class FeedsResource implements Feeds {
 		return Result.ok();
 	}
 
+	@Override
+	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
+		return Result.error(ErrorCode.NOT_IMPLEMENTED);
+	}
+
 	private Result<User> validateUserCredentials(String domain, String userId, String password) {
 		return UsersClientFactory.get(DiscoverySingleton.getInstance().getURI(domain + ":users")).getUser(userId, password);
 	}
 
 	private void propagateMessageToOtherDomains(Message message) {
+		if (ZookeeperReplicationManager.isInitialized() && !ZookeeperReplicationManager.isPrimary()) return;
+		System.out.println("Propagating message: " + message.getId());
 		for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
 			threadPool.execute(() -> FeedsClientFactory.get(uri).propagateMessage(message, Server.secret));
 		}

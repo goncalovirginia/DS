@@ -8,6 +8,7 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import zookeeper.FeedsOperation;
 
 import java.net.URI;
 import java.util.List;
@@ -61,6 +62,20 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	@Override
 	public Result<Void> deleteUserData(String user, String secret) {
 		return reTry(() -> clt_deleteUserData(user, secret));
+	}
+
+	@Override
+	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
+		return reTry(() -> clt_replicateOperation(operation, secret));
+	}
+
+	private Result<Void> clt_replicateOperation(FeedsOperation operation, String secret) {
+		Response r = target.path("replicateOperation")
+				.queryParam("secret", secret)
+				.request()
+				.put(Entity.entity(operation, MediaType.APPLICATION_JSON));
+
+		return responseToResult(r, Void.class);
 	}
 
 	private Result<Void> clt_propagateMessage(Message message, String secret) {

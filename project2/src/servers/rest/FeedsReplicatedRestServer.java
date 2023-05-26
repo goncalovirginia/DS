@@ -1,5 +1,8 @@
 package servers.rest;
 
+import zookeeper.VersionFilter;
+import zookeeper.ZookeeperReplicationManager;
+
 public class FeedsReplicatedRestServer extends RestServer {
 
 	public static final int PORT = 8080;
@@ -18,7 +21,9 @@ public class FeedsReplicatedRestServer extends RestServer {
 		serverId = Long.parseLong(args[1]);
 		secret = args[2];
 
-		new FeedsReplicatedRestServer().run();
+		new FeedsReplicatedRestServer().run(new FeedsReplicatedRestResource(), new VersionFilter());
+
+		ZookeeperReplicationManager.initialize();
 	}
 
 }

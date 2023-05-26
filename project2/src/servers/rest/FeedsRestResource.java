@@ -2,9 +2,11 @@ package servers.rest;
 
 import api.Message;
 import api.java.Feeds;
+import api.java.Result;
 import api.rest.RestFeeds;
 import jakarta.inject.Singleton;
 import servers.resources.FeedsResource;
+import zookeeper.FeedsOperation;
 
 import java.util.List;
 
@@ -28,12 +30,12 @@ public class FeedsRestResource extends RestResource implements RestFeeds {
 	}
 
 	@Override
-	public Message getMessage(String user, long mid) {
+	public Message getMessage(long version, String user, long mid) {
 		return fromJavaResult(feeds.getMessage(user, mid));
 	}
 
 	@Override
-	public List<Message> getMessages(String user, long time) {
+	public List<Message> getMessages(long version, String user, long time) {
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
 
@@ -48,7 +50,7 @@ public class FeedsRestResource extends RestResource implements RestFeeds {
 	}
 
 	@Override
-	public List<String> listSubs(String user) {
+	public List<String> listSubs(long version, String user) {
 		return fromJavaResult(feeds.listSubs(user));
 	}
 
@@ -60,6 +62,11 @@ public class FeedsRestResource extends RestResource implements RestFeeds {
 	@Override
 	public void deleteUserData(String user, String secret) {
 		fromJavaResult(feeds.deleteUserData(user, secret));
+	}
+
+	@Override
+	public void replicateOperation(FeedsOperation operation, String secret) {
+		fromJavaResult(Result.error(Result.ErrorCode.NOT_IMPLEMENTED));
 	}
 
 }

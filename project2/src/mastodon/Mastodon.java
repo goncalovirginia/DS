@@ -19,6 +19,7 @@ import mastodon.msgs.PostStatusArgs;
 import mastodon.msgs.PostStatusResult;
 import servers.Server;
 import utils.JSON;
+import zookeeper.FeedsOperation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -111,7 +112,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(INTERNAL_ERROR);
+		return error(INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 
@@ -167,7 +168,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -194,7 +195,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -220,7 +221,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -246,7 +247,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -279,7 +280,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
@@ -289,6 +290,11 @@ public class Mastodon implements Feeds {
 
 	@Override
 	public Result<Void> deleteUserData(String user, String secret) {
+		return error(NOT_IMPLEMENTED);
+	}
+
+	@Override
+	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
 		return error(NOT_IMPLEMENTED);
 	}
 
@@ -322,7 +328,7 @@ public class Mastodon implements Feeds {
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
-		return error(Result.ErrorCode.INTERNAL_ERROR);
+		return error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	private Result<User> validateUserCredentials(String domain, String userId, String password) {

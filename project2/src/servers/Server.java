@@ -12,6 +12,7 @@ public abstract class Server {
 	public static String domain;
 	public static long serverId;
 	public static String secret;
+	public static String serverURI;
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");

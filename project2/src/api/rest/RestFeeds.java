@@ -3,6 +3,7 @@ package api.rest;
 import api.Message;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import zookeeper.FeedsOperation;
 
 import java.util.List;
 
@@ -18,6 +19,8 @@ public interface RestFeeds {
 	String SECRET = "secret";
 
 	String PATH = "/feeds";
+
+	String HEADER_VERSION = "X-FEEDS-version";
 
 	/**
 	 * Posts a new message in the feed, associating it to the feed of the specific user.
@@ -65,7 +68,7 @@ public interface RestFeeds {
 	@GET
 	@Path("/{" + USER + "}/{" + MID + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	Message getMessage(@PathParam(USER) String user, @PathParam(MID) long mid);
+	Message getMessage(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user, @PathParam(MID) long mid);
 
 	/**
 	 * Returns a list of all messages stored in the server for a given user newer than time
@@ -79,7 +82,7 @@ public interface RestFeeds {
 	@GET
 	@Path("/{" + USER + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	List<Message> getMessages(@PathParam(USER) String user, @QueryParam(TIME) long time);
+	List<Message> getMessages(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user, @QueryParam(TIME) long time);
 
 
 	/**
@@ -125,7 +128,7 @@ public interface RestFeeds {
 	@GET
 	@Path("/sub/list/{" + USER + "}")
 	@Produces(MediaType.APPLICATION_JSON)
-	List<String> listSubs(@PathParam(USER) String user);
+	List<String> listSubs(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user);
 
 	/**
 	 * Adds the propagated message to the subscriber's feed in the current domain.
@@ -148,5 +151,9 @@ public interface RestFeeds {
 	@DELETE
 	@Path("/deleteData/{" + USER + "}")
 	void deleteUserData(@PathParam(USER) String user, @QueryParam(SECRET) String secret);
+
+	@PUT
+	@Path("/replicateOperation")
+	void replicateOperation(FeedsOperation operation, @QueryParam(SECRET) String secret);
 
 }
