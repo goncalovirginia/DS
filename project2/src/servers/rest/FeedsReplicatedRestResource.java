@@ -48,7 +48,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 
 	@Override
 	public Message getMessage(long version, String user, long mid) {
-		if (!ZookeeperReplicationManager.isPrimary() || version > ZookeeperReplicationManager.getVersion()) {
+		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s/%s", user, mid));
 		}
 		return fromJavaResult(feeds.getMessage(user, mid));
@@ -56,7 +56,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 
 	@Override
 	public List<Message> getMessages(long version, String user, long time) {
-		if (!ZookeeperReplicationManager.isPrimary() || version > ZookeeperReplicationManager.getVersion()) {
+		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s", user));
 		}
 		return fromJavaResult(feeds.getMessages(user, time));
@@ -82,7 +82,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 
 	@Override
 	public List<String> listSubs(long version, String user) {
-		if (!ZookeeperReplicationManager.isPrimary() || version > ZookeeperReplicationManager.getVersion()) {
+		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/list/%s", user));
 		}
 		return fromJavaResult(feeds.listSubs(user));
@@ -119,7 +119,6 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 	private void operationSwitch(FeedsOperation operation) {
 		List<String> args = operation.args();
 		switch (operation.type()) {
-
 			case postMessage -> feeds.postMessage(args.get(0), args.get(1), JSON.decode(args.get(2), Message.class));
 			case removeFromPersonalFeed -> feeds.removeFromPersonalFeed(args.get(0), Long.parseLong(args.get(1)), args.get(2));
 			case subUser -> feeds.subUser(args.get(0), args.get(1), args.get(2));

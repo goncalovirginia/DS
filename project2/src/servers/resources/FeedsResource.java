@@ -234,7 +234,6 @@ public class FeedsResource implements Feeds {
 
 	private void propagateMessageToOtherDomains(Message message) {
 		if (ZookeeperReplicationManager.isInitialized() && !ZookeeperReplicationManager.isPrimary()) return;
-		System.out.println("Propagating message: " + message.getId());
 		for (URI uri : DiscoverySingleton.getInstance().getURIsOfOtherDomainsFeeds(Server.domain)) {
 			threadPool.execute(() -> FeedsClientFactory.get(uri).propagateMessage(message, Server.secret));
 		}
