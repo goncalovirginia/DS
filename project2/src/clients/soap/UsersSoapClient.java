@@ -12,13 +12,13 @@ import java.net.URI;
 import java.util.List;
 
 public class UsersSoapClient extends SoapClient implements Users {
-
+	
 	private UsersService stub;
-
+	
 	public UsersSoapClient(URI serverURI) {
 		super(serverURI);
 	}
-
+	
 	synchronized private UsersService stub() {
 		if (stub == null) {
 			QName qName = new QName(UsersService.NAMESPACE, UsersService.NAME);
@@ -28,30 +28,30 @@ public class UsersSoapClient extends SoapClient implements Users {
 		}
 		return stub;
 	}
-
+	
 	@Override
 	public Result<String> createUser(User user) {
 		return reTry(() -> responseToResult(() -> stub().createUser(user)));
 	}
-
+	
 	@Override
 	public Result<User> getUser(String name, String pwd) {
 		return reTry(() -> responseToResult(() -> stub().getUser(name, pwd)));
 	}
-
+	
 	@Override
 	public Result<User> updateUser(String name, String pwd, User user) {
 		return reTry(() -> responseToResult(() -> stub().updateUser(name, pwd, user)));
 	}
-
+	
 	@Override
 	public Result<User> deleteUser(String name, String pwd) {
 		return reTry(() -> responseToResult(() -> stub().deleteUser(name, pwd)));
 	}
-
+	
 	@Override
 	public Result<List<User>> searchUsers(String pattern) {
 		return reTry(() -> responseToResult(() -> stub().searchUsers(pattern)));
 	}
-
+	
 }

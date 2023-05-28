@@ -5,9 +5,9 @@ import mastodon.Mastodon;
 
 @Singleton
 public class FeedsProxyRestResource extends FeedsRestResource {
-
+	
 	public FeedsProxyRestResource() {
 		this.feeds = new Mastodon();
 	}
-
+	
 }
