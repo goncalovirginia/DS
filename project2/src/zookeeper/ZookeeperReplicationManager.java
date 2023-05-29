@@ -31,8 +31,18 @@ public class ZookeeperReplicationManager {
 	
 	private static final AtomicLong versionCounter = new AtomicLong();
 	
-	private static final Queue<FeedsOperation> operationQueue = new ConcurrentLinkedQueue<>();
-	private static final ConcurrentMap<Long, Object> operationQueueLocks = new ConcurrentHashMap<>();
+	private static final BlockingQueue<FeedsOperation> operationQueue = new LinkedBlockingQueue<>();
+	
+	private static final Thread operationQueueConsumer = new Thread(() -> {
+		while (true) {
+			try {
+				FeedsOperation operation = operationQueue.take();
+				writeToSecondaries(operation);
+				operation.notify();
+			} catch (InterruptedException ignored) {
+			}
+		}
+	});
 	
 	public static void initialize() {
 		zookeeperLayer = new ZookeeperLayer(KAFKA_HOST);
@@ -56,7 +66,7 @@ public class ZookeeperReplicationManager {
 		}
 		
 		updatePrimary();
-		startOperationQueueConsumer();
+		operationQueueConsumer.start();
 	}
 	
 	private static void process(WatchedEvent event) {
@@ -106,24 +116,10 @@ public class ZookeeperReplicationManager {
 	public static void queueOperation(FeedsOperationType type, List<String> args) {
 		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
 		operationQueue.add(operation);
-		Object lock = new Object();
-		operationQueueLocks.put(operation.version(), lock);
 		try {
-			lock.wait();
+			operation.wait();
 		} catch (InterruptedException ignored){
 		}
-	}
-	
-	private static void startOperationQueueConsumer() {
-		new Thread(() -> {
-			while (true) {
-				if (!operationQueue.isEmpty()) {
-					FeedsOperation operation = operationQueue.poll();
-					writeToSecondaries(operation);
-					operationQueueLocks.remove(operation.version()).notify();
-				}
-			}
-		}).start();
 	}
 	
 	private static void transferStateToSecondary(String secondaryURI) {
