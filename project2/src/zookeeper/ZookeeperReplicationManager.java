@@ -12,6 +12,7 @@ import servers.rest.FeedsReplicatedRestServer;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,6 +30,9 @@ public class ZookeeperReplicationManager {
 	private static final Map<String, String> secondaryURIs = new ConcurrentHashMap<>();
 	
 	private static final AtomicLong versionCounter = new AtomicLong();
+	
+	private static final Queue<FeedsOperation> operationQueue = new ConcurrentLinkedQueue<>();
+	private static final ConcurrentMap<Long, Object> operationQueueLocks = new ConcurrentHashMap<>();
 	
 	public static void initialize() {
 		zookeeperLayer = new ZookeeperLayer(KAFKA_HOST);
@@ -52,6 +56,7 @@ public class ZookeeperReplicationManager {
 		}
 		
 		updatePrimary();
+		startOperationQueueConsumer();
 	}
 	
 	private static void process(WatchedEvent event) {
@@ -83,8 +88,7 @@ public class ZookeeperReplicationManager {
 		throw new WebApplicationException(Response.temporaryRedirect(URI.create(primaryURI + RestFeeds.PATH + path)).entity(bodyEntity).build());
 	}
 	
-	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
-		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
+	public static void writeToSecondaries(FeedsOperation operation) {
 		CountDownLatch countDownLatch = new CountDownLatch(secondaryURIs.size());
 		
 		for (String uri : secondaryURIs.values()) {
@@ -97,6 +101,29 @@ public class ZookeeperReplicationManager {
 			countDownLatch.await(COUNTDOWNLATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException ignored) {
 		}
+	}
+	
+	public static void queueOperation(FeedsOperationType type, List<String> args) {
+		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
+		operationQueue.add(operation);
+		Object lock = new Object();
+		operationQueueLocks.put(operation.version(), lock);
+		try {
+			lock.wait();
+		} catch (InterruptedException ignored){
+		}
+	}
+	
+	private static void startOperationQueueConsumer() {
+		new Thread(() -> {
+			while (true) {
+				if (!operationQueue.isEmpty()) {
+					FeedsOperation operation = operationQueue.poll();
+					writeToSecondaries(operation);
+					operationQueueLocks.remove(operation.version()).notify();
+				}
+			}
+		}).start();
 	}
 	
 	private static void transferStateToSecondary(String secondaryURI) {
