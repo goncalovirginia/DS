@@ -113,24 +113,21 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!secret.equals(Server.secret)) {
 			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
 		}
-		ZookeeperReplicationManager.incrementVersion();
+
 		operationSwitch(operation);
+		ZookeeperReplicationManager.setVersion(operation.version());
 	}
 	
 	private void operationSwitch(FeedsOperation operation) {
 		List<String> args = operation.args();
 		switch (operation.type()) {
 			case postMessage -> feeds.postMessage(args.get(0), args.get(1), JSON.decode(args.get(2), Message.class));
-			case removeFromPersonalFeed ->
-					feeds.removeFromPersonalFeed(args.get(0), Long.parseLong(args.get(1)), args.get(2));
+			case removeFromPersonalFeed -> feeds.removeFromPersonalFeed(args.get(0), Long.parseLong(args.get(1)), args.get(2));
 			case subUser -> feeds.subUser(args.get(0), args.get(1), args.get(2));
 			case unsubscribeUser -> feeds.unsubscribeUser(args.get(0), args.get(1), args.get(2));
 			case propagateMessage -> feeds.propagateMessage(JSON.decode(args.get(0), Message.class), args.get(1));
 			case deleteUserData -> feeds.deleteUserData(args.get(0), args.get(1));
-			case transferState -> {
-				((FeedsResource) feeds).importState(operation.args());
-				ZookeeperReplicationManager.copyVersion(operation);
-			}
+			case transferState -> ((FeedsResource) feeds).importState(operation.args());
 		}
 	}
 	

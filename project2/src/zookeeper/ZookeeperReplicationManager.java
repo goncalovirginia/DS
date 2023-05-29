@@ -130,12 +130,8 @@ public class ZookeeperReplicationManager {
 		return versionCounter.get();
 	}
 	
-	public static void incrementVersion() {
-		versionCounter.incrementAndGet();
-	}
-	
-	public static void copyVersion(FeedsOperation operation) {
-		versionCounter.set(operation.version());
+	public static void setVersion(long version) {
+		versionCounter.set(version);
 	}
 	
 }
