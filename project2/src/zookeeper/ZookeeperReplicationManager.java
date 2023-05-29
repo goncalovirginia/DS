@@ -114,9 +114,9 @@ public class ZookeeperReplicationManager {
 	}
 	
 	public static void queueOperation(FeedsOperationType type, List<String> args) {
-		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
-		operationQueue.add(operation);
 		try {
+			FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
+			operationQueue.put(operation);
 			operation.wait();
 		} catch (InterruptedException ignored){
 		}
