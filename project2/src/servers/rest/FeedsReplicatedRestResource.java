@@ -126,8 +126,6 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
 		}
 		synchronized (operationLock) {
-			if (operation.type() == FeedsOperationType.transferState) System.out.println("Importing state...");
-			if (operation.type() == FeedsOperationType.unsubscribeUser) System.out.println("Unsubscribing user...");
 			operationSwitch(operation);
 			ZookeeperReplicationManager.setVersion(operation.version());
 		}
