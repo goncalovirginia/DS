@@ -90,6 +90,8 @@ public class ZookeeperReplicationManager {
 	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
 		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
 		CountDownLatch countDownLatch = new CountDownLatch(1);
+
+		Log.info("writeToSecondaries : " + operation.type() + " " + operation.version());
 		
 		for (String uri : secondaryURIs.values()) {
 			threadPool.execute(() -> {

@@ -15,9 +15,12 @@ import zookeeper.ZookeeperReplicationManager;
 
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Singleton
 public class FeedsReplicatedRestResource extends RestResource implements RestFeeds {
+
+	private static final Logger Log = Logger.getLogger(FeedsReplicatedRestResource.class.getName());
 	
 	protected Feeds feeds;
 	
@@ -122,11 +125,13 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 	
 	@Override
 	public void replicateOperation(FeedsOperation operation, String secret) {
+		Log.info("replicateOperation : " + operation.type() + " " + operation.version());
+
 		if (!secret.equals(Server.secret)) {
 			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
 		}
 		synchronized (operationLock) {
-			if (operation.version() <= ZookeeperReplicationManager.getVersion()) {
+			if (operation.version() <= ZookeeperReplicationManager.getVersion() && operation.type() != FeedsOperationType.transferState) {
 				fromJavaResult(Result.error(Result.ErrorCode.CONFLICT));
 			}
 			executeOperation(operation);
