@@ -152,6 +152,12 @@ public interface RestFeeds {
 	@Path("/deleteData/{" + USER + "}")
 	void deleteUserData(@PathParam(USER) String user, @QueryParam(SECRET) String secret);
 	
+	/**
+	 * Replicates an operation from the primary server.
+	 * @param operation operation to replicate
+	 * @param secret secret string authenticating servers
+	 * @return 204, 403 if secret doesn't match, 409 if the operations' version is old
+	 */
 	@PUT
 	@Path("/replicateOperation")
 	void replicateOperation(FeedsOperation operation, @QueryParam(SECRET) String secret);

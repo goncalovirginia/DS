@@ -8,7 +8,7 @@ public class FeedsReplicatedRestServer extends RestServer {
 	public static final int PORT = 8080;
 	public static final String SERVICE = "feeds";
 	
-	public static final FeedsReplicatedRestResource feedsReplicatedRestResourceInstance = new FeedsReplicatedRestResource();
+	public static final FeedsReplicatedRestResource resourceInstance = new FeedsReplicatedRestResource();
 	
 	protected FeedsReplicatedRestServer() {
 		super(FeedsReplicatedRestServer.class.getName(), PORT, SERVICE, FeedsReplicatedRestResource.class);
@@ -23,7 +23,7 @@ public class FeedsReplicatedRestServer extends RestServer {
 		serverId = Long.parseLong(args[1]);
 		secret = args[2];
 		
-		new FeedsReplicatedRestServer().run(feedsReplicatedRestResourceInstance, new VersionFilter());
+		new FeedsReplicatedRestServer().run(resourceInstance, new VersionFilter());
 		
 		ZookeeperReplicationManager.initialize();
 	}

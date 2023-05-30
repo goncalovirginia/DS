@@ -1,5 +1,6 @@
 package zookeeper;
 
+import api.java.Result;
 import api.rest.RestFeeds;
 import clients.FeedsClientFactory;
 import jakarta.ws.rs.WebApplicationException;
@@ -24,7 +25,7 @@ public class ZookeeperReplicationManager {
 	private static final String KAFKA_HOST = "kafka:2181";
 	private static final String ROOT = "/" + Server.domain;
 	
-	private static final long COUNTDOWNLATCH_TIMEOUT_MS = 1000;
+	private static final long TIMEOUT_MS = 1000;
 	
 	private static final ExecutorService threadPool = Executors.newCachedThreadPool();
 	
@@ -50,7 +51,7 @@ public class ZookeeperReplicationManager {
 			});
 		}
 		try {
-			countDownLatch.await(COUNTDOWNLATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+			countDownLatch.await(TIMEOUT_MS, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException ignored) {
 		}
 		
@@ -88,7 +89,7 @@ public class ZookeeperReplicationManager {
 	
 	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
 		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
-		CountDownLatch countDownLatch = new CountDownLatch(secondaryURIs.size());
+		CountDownLatch countDownLatch = new CountDownLatch(1);
 		
 		for (String uri : secondaryURIs.values()) {
 			threadPool.execute(() -> {
@@ -97,24 +98,22 @@ public class ZookeeperReplicationManager {
 			});
 		}
 		try {
-			countDownLatch.await(COUNTDOWNLATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+			countDownLatch.await(TIMEOUT_MS, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException ignored) {
 		}
 	}
 	
 	private static void transferStateToSecondary(String secondaryURI) {
 		synchronized (FeedsReplicatedRestResource.operationLock) {
-			List<String> feedsResourceInstanceDataStructuresJson = FeedsReplicatedRestServer.feedsReplicatedRestResourceInstance.getResourceInstanceDataStructuresJSONs();
-			FeedsOperation operation = new FeedsOperation(versionCounter.get(), FeedsOperationType.transferState, feedsResourceInstanceDataStructuresJson);
-			CountDownLatch countDownLatch = new CountDownLatch(1);
+			List<String> args = FeedsReplicatedRestServer.resourceInstance.getState();
+			FeedsOperation operation = new FeedsOperation(versionCounter.get(), FeedsOperationType.transferState, args);
 			
-			threadPool.execute(() -> {
-				FeedsClientFactory.get(URI.create(secondaryURI)).replicateOperation(operation, Server.secret);
-				countDownLatch.countDown();
-			});
+			Log.info("transferStateToSecondary : " + operation.type() + " " + operation.version());
+			
+			Future<Result<Void>> future = threadPool.submit(() -> FeedsClientFactory.get(URI.create(secondaryURI)).replicateOperation(operation, Server.secret));
 			try {
-				countDownLatch.await(COUNTDOWNLATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException ignored) {
+				future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+			} catch (Exception ignored) {
 			}
 		}
 	}

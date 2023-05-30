@@ -250,10 +250,14 @@ public class FeedsResource implements Feeds {
 	}
 	
 	public void importState(List<String> jsonString) {
+		Log.info("importState");
+		userFeed.clear();
 		userFeed.putAll(JSON.decode(jsonString.get(0), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap<Long, Message>>>() {
 		}));
+		userSubscribedTo.clear();
 		userSubscribedTo.putAll(JSON.decode(jsonString.get(1), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<String, Boolean>>>() {
 		}));
+		userSubscribers.clear();
 		userSubscribers.putAll(JSON.decode(jsonString.get(2), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<String, Boolean>>>() {
 		}));
 	}

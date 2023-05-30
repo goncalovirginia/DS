@@ -126,12 +126,14 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
 		}
 		synchronized (operationLock) {
-			operationSwitch(operation);
-			ZookeeperReplicationManager.setVersion(operation.version());
+			if (operation.version() <= ZookeeperReplicationManager.getVersion()) {
+				fromJavaResult(Result.error(Result.ErrorCode.CONFLICT));
+			}
+			executeOperation(operation);
 		}
 	}
 	
-	private void operationSwitch(FeedsOperation operation) {
+	private void executeOperation(FeedsOperation operation) {
 		List<String> args = operation.args();
 		switch (operation.type()) {
 			case postMessage -> feeds.postMessage(args.get(0), args.get(1), JSON.decode(args.get(2), Message.class));
@@ -142,9 +144,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			case deleteUserData -> feeds.deleteUserData(args.get(0), args.get(1));
 			case transferState -> ((FeedsResource) feeds).importState(operation.args());
 		}
+		ZookeeperReplicationManager.setVersion(operation.version());
 	}
 	
-	public List<String> getResourceInstanceDataStructuresJSONs() {
+	public List<String> getState() {
 		return ((FeedsResource) feeds).dataStructuresToJson();
 	}
 	

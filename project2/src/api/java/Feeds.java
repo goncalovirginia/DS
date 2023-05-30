@@ -114,6 +114,12 @@ public interface Feeds {
 	 */
 	Result<Void> deleteUserData(String user, String secret);
 	
+	/**
+	 * Replicates an operation from the primary server.
+	 * @param operation operation to replicate
+	 * @param secret secret string authenticating servers
+	 * @return 204, 403 if secret doesn't match, 409 if the operations' version is old
+	 */
 	Result<Void> replicateOperation(FeedsOperation operation, String secret);
 	
 }
