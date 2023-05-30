@@ -21,6 +21,8 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 	
 	protected Feeds feeds;
 	
+	public static final Object operationLock = new Object();
+	
 	public FeedsReplicatedRestResource() {
 		feeds = new FeedsResource();
 	}
@@ -30,11 +32,11 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s?pwd=%s", user, pwd), msg);
 		}
-		Result<Long> result = feeds.postMessage(user, pwd, msg);
-		if (result.isOK()) {
-			ZookeeperReplicationManager.queueOperation(FeedsOperationType.postMessage, List.of(user, pwd, JSON.encode(msg)));
+		synchronized (operationLock) {
+			long id = fromJavaResult(feeds.postMessage(user, pwd, msg));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.postMessage, List.of(user, pwd, JSON.encode(msg)));
+			return id;
 		}
-		return fromJavaResult(result);
 	}
 	
 	@Override
@@ -42,8 +44,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s/%s?pwd=%s", user, mid, pwd));
 		}
-		fromJavaResult(feeds.removeFromPersonalFeed(user, mid, pwd));
-		ZookeeperReplicationManager.queueOperation(FeedsOperationType.removeFromPersonalFeed, List.of(user, String.valueOf(mid), pwd));
+		synchronized (operationLock) {
+			fromJavaResult(feeds.removeFromPersonalFeed(user, mid, pwd));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.removeFromPersonalFeed, List.of(user, String.valueOf(mid), pwd));
+		}
 	}
 	
 	@Override
@@ -67,8 +71,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/%s/%s?pwd=%s", user, userSub, pwd));
 		}
-		fromJavaResult(feeds.subUser(user, userSub, pwd));
-		ZookeeperReplicationManager.queueOperation(FeedsOperationType.subUser, List.of(user, userSub, pwd));
+		synchronized (operationLock) {
+			fromJavaResult(feeds.subUser(user, userSub, pwd));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.subUser, List.of(user, userSub, pwd));
+		}
 	}
 	
 	@Override
@@ -76,8 +82,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/%s/%s?pwd=%s", user, userSub, pwd));
 		}
-		fromJavaResult(feeds.unsubscribeUser(user, userSub, pwd));
-		ZookeeperReplicationManager.queueOperation(FeedsOperationType.unsubscribeUser, List.of(user, userSub, pwd));
+		synchronized (operationLock) {
+			fromJavaResult(feeds.unsubscribeUser(user, userSub, pwd));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.unsubscribeUser, List.of(user, userSub, pwd));
+		}
 	}
 	
 	@Override
@@ -94,8 +102,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			new Thread(() -> FeedsClientFactory.get(URI.create(ZookeeperReplicationManager.primaryURI())).propagateMessage(message, secret)).start();
 			return;
 		}
-		fromJavaResult(feeds.propagateMessage(message, secret));
-		ZookeeperReplicationManager.queueOperation(FeedsOperationType.propagateMessage, List.of(JSON.encode(message), secret));
+		synchronized (operationLock) {
+			fromJavaResult(feeds.propagateMessage(message, secret));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.propagateMessage, List.of(JSON.encode(message), secret));
+		}
 	}
 	
 	@Override
@@ -104,8 +114,10 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			new Thread(() -> FeedsClientFactory.get(URI.create(ZookeeperReplicationManager.primaryURI())).deleteUserData(user, secret)).start();
 			return;
 		}
-		fromJavaResult(feeds.deleteUserData(user, secret));
-		ZookeeperReplicationManager.queueOperation(FeedsOperationType.deleteUserData, List.of(user, secret));
+		synchronized (operationLock) {
+			fromJavaResult(feeds.deleteUserData(user, secret));
+			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.deleteUserData, List.of(user, secret));
+		}
 	}
 	
 	@Override
@@ -113,9 +125,12 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (!secret.equals(Server.secret)) {
 			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
 		}
-
-		operationSwitch(operation);
-		ZookeeperReplicationManager.setVersion(operation.version());
+		synchronized (operationLock) {
+			if (operation.type() == FeedsOperationType.transferState) System.out.println("Importing state...");
+			if (operation.type() == FeedsOperationType.unsubscribeUser) System.out.println("Unsubscribing user...");
+			operationSwitch(operation);
+			ZookeeperReplicationManager.setVersion(operation.version());
+		}
 	}
 	
 	private void operationSwitch(FeedsOperation operation) {

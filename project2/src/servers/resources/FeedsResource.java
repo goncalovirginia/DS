@@ -15,11 +15,9 @@ import zookeeper.FeedsOperation;
 import zookeeper.ZookeeperReplicationManager;
 
 import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -30,8 +28,8 @@ public class FeedsResource implements Feeds {
 	
 	private final ExecutorService threadPool = Executors.newCachedThreadPool();
 	
-	private final Map<String, Map<Long, Message>> userFeed;
-	private final Map<String, Set<String>> userSubscribedTo, userSubscribers;
+	private final ConcurrentMap<String, ConcurrentMap<Long, Message>> userFeed;
+	private final ConcurrentMap<String, Set<String>> userSubscribedTo, userSubscribers;
 	
 	public FeedsResource() {
 		userFeed = new ConcurrentHashMap<>();
@@ -242,15 +240,21 @@ public class FeedsResource implements Feeds {
 	}
 	
 	public List<String> dataStructuresToJson() {
-		return List.of(JSON.encode(userFeed), JSON.encode(userSubscribedTo), JSON.encode(userSubscribers));
+		synchronized (userFeed) {
+			synchronized (userSubscribedTo) {
+				synchronized (userSubscribers) {
+					return List.of(JSON.encode(userFeed), JSON.encode(userSubscribedTo), JSON.encode(userSubscribers));
+				}
+			}
+		}
 	}
 	
 	public void importState(List<String> jsonString) {
-		userFeed.putAll(JSON.decode(jsonString.get(0), new TypeToken<Map<String, Map<Long, Message>>>() {
+		userFeed.putAll(JSON.decode(jsonString.get(0), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap<Long, Message>>>() {
 		}));
-		userSubscribedTo.putAll(JSON.decode(jsonString.get(1), new TypeToken<Map<String, Set<String>>>() {
+		userSubscribedTo.putAll(JSON.decode(jsonString.get(1), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<String, Boolean>>>() {
 		}));
-		userSubscribers.putAll(JSON.decode(jsonString.get(2), new TypeToken<Map<String, Set<String>>>() {
+		userSubscribers.putAll(JSON.decode(jsonString.get(2), new TypeToken<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<String, Boolean>>>() {
 		}));
 	}
 	

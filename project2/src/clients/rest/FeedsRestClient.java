@@ -46,7 +46,7 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	
 	@Override
 	public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
-		return null;
+		return reTry(() -> clt_unsubscribeUser(user, userSub, pwd));
 	}
 	
 	@Override
@@ -67,6 +67,17 @@ public class FeedsRestClient extends RestClient implements Feeds {
 	@Override
 	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
 		return reTry(() -> clt_replicateOperation(operation, secret));
+	}
+	
+	private Result<Void> clt_unsubscribeUser(String user, String userSub, String pwd) {
+		Response r = target.path("sub")
+				.path(user)
+				.path(userSub)
+				.queryParam("pwd", pwd)
+				.request()
+				.delete();
+		
+		return responseToResult(r, Void.class);
 	}
 	
 	private Result<Void> clt_replicateOperation(FeedsOperation operation, String secret) {
