@@ -36,13 +36,15 @@ public class FeedsSoapResource extends SoapResource<FeedsException> implements F
 
 	@Override
 	public Message getMessage(String user, long mid) throws FeedsException {
-		fromJavaResult(preconditions.getMessage(user, mid));
+		Message r = fromJavaResult(preconditions.getMessage(user, mid));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessage(user, mid));
 	}
 
 	@Override
 	public List<Message> getMessages(String user, long time) throws FeedsException {
-		fromJavaResult(preconditions.getMessages(user, time));
+		List<Message> r = fromJavaResult(preconditions.getMessages(user, time));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
 
@@ -66,11 +68,13 @@ public class FeedsSoapResource extends SoapResource<FeedsException> implements F
 
 	@Override
 	public void propagateMessage(Message message, String secret) throws FeedsException {
+		fromJavaResult(preconditions.propagateMessage(message, secret));
 		fromJavaResult(feeds.propagateMessage(message, secret));
 	}
 
 	@Override
 	public void deleteUserData(String user, String secret) throws FeedsException {
+		fromJavaResult(preconditions.deleteUserData(user, secret));
 		fromJavaResult(feeds.deleteUserData(user, secret));
 	}
 

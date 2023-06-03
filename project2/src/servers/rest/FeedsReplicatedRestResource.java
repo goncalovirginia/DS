@@ -63,7 +63,8 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s/%s", user, mid));
 		}
-		fromJavaResult(preconditions.getMessage(user, mid));
+		Message r = fromJavaResult(preconditions.getMessage(user, mid));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessage(user, mid));
 	}
 
@@ -72,7 +73,8 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s?time=%s", user, time));
 		}
-		fromJavaResult(preconditions.getMessages(user, time));
+		List<Message> r = fromJavaResult(preconditions.getMessages(user, time));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
 
@@ -115,6 +117,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			new Thread(() -> FeedsClientFactory.get(URI.create(ZookeeperReplicationManager.primaryURI())).propagateMessage(message, secret)).start();
 			return;
 		}
+		fromJavaResult(preconditions.propagateMessage(message, secret));
 		synchronized (operationLock) {
 			fromJavaResult(feeds.propagateMessage(message, secret));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.propagateMessage, List.of(JSON.encode(message), secret));
@@ -127,6 +130,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			new Thread(() -> FeedsClientFactory.get(URI.create(ZookeeperReplicationManager.primaryURI())).deleteUserData(user, secret)).start();
 			return;
 		}
+		fromJavaResult(preconditions.deleteUserData(user, secret));
 		synchronized (operationLock) {
 			fromJavaResult(feeds.deleteUserData(user, secret));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.deleteUserData, List.of(user, secret));
@@ -137,9 +141,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 	public void replicateOperation(FeedsOperation operation, String secret) {
 		Log.info("replicateOperation : " + operation.type() + " " + operation.version());
 
-		if (!secret.equals(Server.secret)) {
-			fromJavaResult(Result.error(Result.ErrorCode.FORBIDDEN));
-		}
+		fromJavaResult(preconditions.replicateOperation(operation, secret));
 		synchronized (operationLock) {
 			if (operation.version() <= ZookeeperReplicationManager.getVersion() && operation.type() != FeedsOperationType.transferState) {
 				fromJavaResult(Result.error(Result.ErrorCode.CONFLICT));

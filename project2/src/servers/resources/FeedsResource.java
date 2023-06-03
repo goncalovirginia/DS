@@ -115,7 +115,7 @@ public class FeedsResource implements Feeds {
 		Log.info("unsubscribeUser : user = " + user + "; userSub = " + userSub + "; pwd = " + pwd);
 
 		Set<String> subscribedTo = userSubscribedTo.get(user);
-		if (subscribedTo != null) subscribedTo.remove(userSub);
+		if (subscribedTo == null || !subscribedTo.remove(userSub)) return Result.error(ErrorCode.NOT_FOUND);
 		Set<String> subscribers = userSubscribers.get(userSub);
 		if (subscribers != null) subscribers.remove(user);
 
@@ -132,8 +132,6 @@ public class FeedsResource implements Feeds {
 	@Override
 	public Result<Void> propagateMessage(Message message, String secret) {
 		Log.info("propagateMessage : message = " + message);
-
-		if (!secret.equals(Server.secret)) return Result.error(ErrorCode.FORBIDDEN);
 
 		Set<String> subscribers = userSubscribers.get(message.getUser() + "@" + message.getDomain());
 
@@ -152,8 +150,6 @@ public class FeedsResource implements Feeds {
 	@Override
 	public Result<Void> deleteUserData(String user, String secret) {
 		Log.info("deleteUserData : user = " + user);
-
-		if (!secret.equals(Server.secret)) return Result.error(ErrorCode.FORBIDDEN);
 
 		userFeed.remove(user);
 		userSubscribers.remove(user);

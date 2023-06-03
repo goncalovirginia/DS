@@ -36,13 +36,15 @@ public class FeedsRestResource extends RestResource implements RestFeeds {
 
 	@Override
 	public Message getMessage(long version, String user, long mid) {
-		fromJavaResult(preconditions.getMessage(user, mid));
+		Message r = fromJavaResult(preconditions.getMessage(user, mid));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessage(user, mid));
 	}
 
 	@Override
 	public List<Message> getMessages(long version, String user, long time) {
-		fromJavaResult(preconditions.getMessages(user, time));
+		List<Message> r = fromJavaResult(preconditions.getMessages(user, time));
+		if (r != null) return r;
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
 
@@ -66,16 +68,19 @@ public class FeedsRestResource extends RestResource implements RestFeeds {
 
 	@Override
 	public void propagateMessage(Message message, String secret) {
+		fromJavaResult(preconditions.propagateMessage(message, secret));
 		fromJavaResult(feeds.propagateMessage(message, secret));
 	}
 
 	@Override
 	public void deleteUserData(String user, String secret) {
+		fromJavaResult(preconditions.deleteUserData(user, secret));
 		fromJavaResult(feeds.deleteUserData(user, secret));
 	}
 
 	@Override
 	public void replicateOperation(FeedsOperation operation, String secret) {
+		fromJavaResult(preconditions.replicateOperation(operation, secret));
 		fromJavaResult(Result.error(Result.ErrorCode.NOT_IMPLEMENTED));
 	}
 

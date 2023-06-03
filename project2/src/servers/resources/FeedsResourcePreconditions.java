@@ -53,8 +53,7 @@ public class FeedsResourcePreconditions implements Feeds {
 		String[] nameAndDomain = user.split("@");
 
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			String uriString = String.format("%s/feeds/%s/%s", DiscoverySingleton.getInstance().getURI(nameAndDomain[1] + ":feeds"), user, mid);
-			throw new WebApplicationException(Response.temporaryRedirect(URI.create(uriString)).build());
+			return FeedsClientFactory.get(DiscoverySingleton.getInstance().getURI(nameAndDomain[1] + ":feeds")).getMessage(user, mid);
 		}
 
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
@@ -68,8 +67,7 @@ public class FeedsResourcePreconditions implements Feeds {
 		String[] nameAndDomain = user.split("@");
 
 		if (!nameAndDomain[1].equals(Server.domain)) {
-			String uriString = String.format("%s/feeds/%s?time=%s", DiscoverySingleton.getInstance().getURI(nameAndDomain[1] + ":feeds"), user, time);
-			throw new WebApplicationException(Response.temporaryRedirect(URI.create(uriString)).build());
+			return FeedsClientFactory.get(DiscoverySingleton.getInstance().getURI(nameAndDomain[1] + ":feeds")).getMessages(user, time);
 		}
 
 		Result<User> userResult = validateUserCredentials(Server.domain, nameAndDomain[0], "");
@@ -123,17 +121,17 @@ public class FeedsResourcePreconditions implements Feeds {
 
 	@Override
 	public Result<Void> propagateMessage(Message message, String secret) {
-		return null;
+		return secret.equals(Server.secret) ? Result.ok() : Result.error(Result.ErrorCode.FORBIDDEN);
 	}
 
 	@Override
 	public Result<Void> deleteUserData(String user, String secret) {
-		return null;
+		return secret.equals(Server.secret) ? Result.ok() : Result.error(Result.ErrorCode.FORBIDDEN);
 	}
 
 	@Override
 	public Result<Void> replicateOperation(FeedsOperation operation, String secret) {
-		return null;
+		return secret.equals(Server.secret) ? Result.ok() : Result.error(Result.ErrorCode.FORBIDDEN);
 	}
 
 	private Result<User> validateUserCredentials(String domain, String userId, String password) {
