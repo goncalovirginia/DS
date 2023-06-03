@@ -19,30 +19,30 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 public class ZookeeperReplicationManager {
-	
+
 	private static final Logger Log = Logger.getLogger(ZookeeperReplicationManager.class.getName());
-	
+
 	private static final String KAFKA_HOST = "kafka:2181";
 	private static final String ROOT = "/" + Server.domain;
-	
+
 	private static final long TIMEOUT_MS = 1000;
-	
+
 	private static final ExecutorService threadPool = Executors.newCachedThreadPool();
-	
+
 	private static ZookeeperLayer zookeeperLayer;
 	private static String thisZnodePath, primaryZnodePath, primaryURI = "";
 	private static final Map<String, String> secondaryURIs = new ConcurrentHashMap<>();
 	private static final AtomicLong versionCounter = new AtomicLong();
-	
+
 	public static void initialize() {
 		zookeeperLayer = new ZookeeperLayer(KAFKA_HOST);
 		zookeeperLayer.createNode(ROOT, new byte[0], CreateMode.PERSISTENT);
 		zookeeperLayer.addWatcher(ROOT, ZookeeperReplicationManager::process);
 		thisZnodePath = zookeeperLayer.createNode(ROOT + "/", Server.serverURI.getBytes(), CreateMode.EPHEMERAL_SEQUENTIAL);
-		
+
 		List<String> children = zookeeperLayer.getChildren(ROOT);
 		CountDownLatch countDownLatch = new CountDownLatch(children.size());
-		
+
 		for (String child : children) {
 			threadPool.execute(() -> {
 				String childPath = ROOT + "/" + child;
@@ -54,10 +54,10 @@ public class ZookeeperReplicationManager {
 			countDownLatch.await(TIMEOUT_MS, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException ignored) {
 		}
-		
+
 		updatePrimary();
 	}
-	
+
 	private static void process(WatchedEvent event) {
 		Log.info("Zookeeper Event: " + event.getType() + " " + event.getPath());
 		switch (event.getType()) {
@@ -71,28 +71,28 @@ public class ZookeeperReplicationManager {
 			}
 		}
 	}
-	
+
 	private static void updatePrimary() {
 		primaryZnodePath = secondaryURIs.keySet().stream().min(String::compareTo).get();
 		primaryURI = secondaryURIs.get(primaryZnodePath);
 		if (isPrimary()) secondaryURIs.remove(thisZnodePath);
 		Log.info("Primary Server Updated: " + primaryURI);
 	}
-	
+
 	public static void redirectToPrimary(String path) {
 		throw new WebApplicationException(Response.temporaryRedirect(URI.create(primaryURI + RestFeeds.PATH + path)).build());
 	}
-	
+
 	public static void redirectToPrimary(String path, Object bodyEntity) {
 		throw new WebApplicationException(Response.temporaryRedirect(URI.create(primaryURI + RestFeeds.PATH + path)).entity(bodyEntity).build());
 	}
-	
+
 	public static void writeToSecondaries(FeedsOperationType type, List<String> args) {
 		FeedsOperation operation = new FeedsOperation(versionCounter.incrementAndGet(), type, args);
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 
 		Log.info("writeToSecondaries : " + operation.type() + " " + operation.version());
-		
+
 		for (String uri : secondaryURIs.values()) {
 			threadPool.execute(() -> {
 				FeedsClientFactory.get(URI.create(uri)).replicateOperation(operation, Server.secret);
@@ -104,14 +104,14 @@ public class ZookeeperReplicationManager {
 		} catch (InterruptedException ignored) {
 		}
 	}
-	
+
 	private static void transferStateToSecondary(String secondaryURI) {
 		synchronized (FeedsReplicatedRestResource.operationLock) {
 			List<String> args = FeedsReplicatedRestServer.resourceInstance.getState();
 			FeedsOperation operation = new FeedsOperation(versionCounter.get(), FeedsOperationType.transferState, args);
-			
+
 			Log.info("transferStateToSecondary : " + operation.type() + " " + operation.version());
-			
+
 			Future<Result<Void>> future = threadPool.submit(() -> FeedsClientFactory.get(URI.create(secondaryURI)).replicateOperation(operation, Server.secret));
 			try {
 				future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -119,25 +119,25 @@ public class ZookeeperReplicationManager {
 			}
 		}
 	}
-	
+
 	public static boolean isPrimary() {
 		return thisZnodePath.equals(primaryZnodePath);
 	}
-	
+
 	public static String primaryURI() {
 		return primaryURI;
 	}
-	
+
 	public static boolean isInitialized() {
 		return zookeeperLayer != null;
 	}
-	
+
 	public static long getVersion() {
 		return versionCounter.get();
 	}
-	
+
 	public static void setVersion(long version) {
 		versionCounter.set(version);
 	}
-	
+
 }

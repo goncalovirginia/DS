@@ -7,10 +7,10 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public abstract class Client {
-	
+
 	protected static final Logger Log = Logger.getLogger(Client.class.getName());
 	protected static final int READ_TIMEOUT = 10000, CONNECT_TIMEOUT = 10000, RETRY_SLEEP = 100, MAX_RETRIES = 3;
-	
+
 	protected <T> T reTry(Supplier<T> func) {
 		for (int i = 0; i < MAX_RETRIES; i++) {
 			try {
@@ -25,7 +25,7 @@ public abstract class Client {
 		}
 		return null;
 	}
-	
+
 	private void sleep(int ms) {
 		try {
 			Thread.sleep(ms);
@@ -33,5 +33,5 @@ public abstract class Client {
 			// nothing to do...
 		}
 	}
-	
+
 }

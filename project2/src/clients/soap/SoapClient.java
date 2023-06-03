@@ -12,28 +12,28 @@ import java.net.URI;
 import java.net.URL;
 
 public abstract class SoapClient extends Client {
-	
+
 	public static final String WSDL = "?wsdl";
-	
+
 	protected final URI serverURI;
-	
+
 	public SoapClient(URI serverURI) {
 		this.serverURI = serverURI;
 	}
-	
+
 	protected void setTimeouts(BindingProvider port) {
 		port.getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
 		port.getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, READ_TIMEOUT);
 	}
-	
+
 	protected interface ThrowsSupplier<T> {
 		T get() throws Exception;
 	}
-	
+
 	protected interface VoidThrowsSupplier {
 		void run() throws Exception;
 	}
-	
+
 	protected <T> Result<T> responseToResult(ThrowsSupplier<T> supplier) {
 		try {
 			return Result.ok(supplier.get());
@@ -44,7 +44,7 @@ public abstract class SoapClient extends Client {
 			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	protected <T> Result<T> responseToResult(VoidThrowsSupplier supplier) {
 		try {
 			supplier.run();
@@ -56,7 +56,7 @@ public abstract class SoapClient extends Client {
 			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	public static URL toURL(String url) {
 		try {
 			return new URL(url);
@@ -65,5 +65,5 @@ public abstract class SoapClient extends Client {
 		}
 		return null;
 	}
-	
+
 }

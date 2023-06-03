@@ -8,7 +8,7 @@ package api.java;
  * @author smd
  */
 public interface Result<T> {
-	
+
 	/**
 	 * @author smd
 	 * Service errors:
@@ -18,26 +18,26 @@ public interface Result<T> {
 	 * INTERNAL_ERROR - something unexpected happened
 	 */
 	enum ErrorCode {OK, CONFLICT, NOT_FOUND, BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, TIMEOUT}
-	
+
 	/**
 	 * Tests if the result is an error.
 	 */
 	boolean isOK();
-	
+
 	/**
 	 * obtains the payload value of this result
 	 *
 	 * @return the value of this result.
 	 */
 	T value();
-	
+
 	/**
 	 * obtains the error code of this result
 	 *
 	 * @return the error code
 	 */
 	ErrorCode error();
-	
+
 	/**
 	 * Convenience method for returning non error results of the given type
 	 *
@@ -47,7 +47,7 @@ public interface Result<T> {
 	static <T> Result<T> ok(T result) {
 		return new OkResult<>(result);
 	}
-	
+
 	/**
 	 * Convenience method for returning non error results without a value
 	 *
@@ -56,7 +56,7 @@ public interface Result<T> {
 	static <T> Result<T> ok() {
 		return new OkResult<>(null);
 	}
-	
+
 	/**
 	 * Convenience method used to return an error
 	 *
@@ -71,56 +71,56 @@ public interface Result<T> {
  *
  */
 class OkResult<T> implements Result<T> {
-	
+
 	final T result;
-	
+
 	OkResult(T result) {
 		this.result = result;
 	}
-	
+
 	@Override
 	public boolean isOK() {
 		return true;
 	}
-	
+
 	@Override
 	public T value() {
 		return result;
 	}
-	
+
 	@Override
 	public ErrorCode error() {
 		return ErrorCode.OK;
 	}
-	
+
 	public String toString() {
 		return "(OK, " + value() + ")";
 	}
 }
 
 class ErrorResult<T> implements Result<T> {
-	
+
 	final ErrorCode error;
-	
+
 	ErrorResult(ErrorCode error) {
 		this.error = error;
 	}
-	
+
 	@Override
 	public boolean isOK() {
 		return false;
 	}
-	
+
 	@Override
 	public T value() {
 		throw new RuntimeException("Attempting to extract the value of an Error: " + error());
 	}
-	
+
 	@Override
 	public ErrorCode error() {
 		return error;
 	}
-	
+
 	public String toString() {
 		return "(" + error() + ")";
 	}

@@ -9,7 +9,7 @@ import java.util.List;
  */
 
 public interface Discovery {
-	
+
 	/**
 	 * Used to announce the URI of the given service name.
 	 *
@@ -17,7 +17,7 @@ public interface Discovery {
 	 * @param serviceURI  - the uri of the service
 	 */
 	void announce(String serviceName, String serviceURI);
-	
+
 	/**
 	 * Get the URI for a given service name
 	 *
@@ -25,7 +25,7 @@ public interface Discovery {
 	 * @return URI for the given service name.
 	 */
 	URI getURI(String service);
-	
+
 	/**
 	 * Get the URIs of feeds services from other domains.
 	 *
@@ -33,5 +33,5 @@ public interface Discovery {
 	 * @return all feeds service URIs from other domains.
 	 */
 	List<URI> getURIsOfOtherDomainsFeeds(String currDomain);
-	
+
 }

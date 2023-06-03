@@ -9,7 +9,7 @@ import java.util.List;
 
 @Path(RestFeeds.PATH)
 public interface RestFeeds {
-	
+
 	String MID = "mid";
 	String PWD = "pwd";
 	String USER = "user";
@@ -17,11 +17,11 @@ public interface RestFeeds {
 	String DOMAIN = "domain";
 	String USERSUB = "userSub";
 	String SECRET = "secret";
-	
+
 	String PATH = "/feeds";
-	
+
 	String HEADER_VERSION = "X-FEEDS-version";
-	
+
 	/**
 	 * Posts a new message in the feed, associating it to the feed of the specific user.
 	 * A message should be identified before publish it, by assigning an ID.
@@ -40,7 +40,7 @@ public interface RestFeeds {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	long postMessage(@PathParam(USER) String user, @QueryParam(PWD) String pwd, Message msg);
-	
+
 	/**
 	 * Removes the message identified by mid from the feed of user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -56,7 +56,7 @@ public interface RestFeeds {
 	@DELETE
 	@Path("/{" + USER + "}/{" + MID + "}")
 	void removeFromPersonalFeed(@PathParam(USER) String user, @PathParam(MID) long mid, @QueryParam(PWD) String pwd);
-	
+
 	/**
 	 * Obtains the message with id from the feed of user (may be a remote user)
 	 *
@@ -69,7 +69,7 @@ public interface RestFeeds {
 	@Path("/{" + USER + "}/{" + MID + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	Message getMessage(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user, @PathParam(MID) long mid);
-	
+
 	/**
 	 * Returns a list of all messages stored in the server for a given user newer than time
 	 * (note: may be a remote user)
@@ -83,8 +83,8 @@ public interface RestFeeds {
 	@Path("/{" + USER + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	List<Message> getMessages(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user, @QueryParam(TIME) long time);
-	
-	
+
+
 	/**
 	 * Subscribe a user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -100,7 +100,7 @@ public interface RestFeeds {
 	@POST
 	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
 	void subUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
-	
+
 	/**
 	 * UnSubscribe a user
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -116,8 +116,8 @@ public interface RestFeeds {
 	@DELETE
 	@Path("/sub/{" + USER + "}/{" + USERSUB + "}")
 	void unsubscribeUser(@PathParam(USER) String user, @PathParam(USERSUB) String userSub, @QueryParam(PWD) String pwd);
-	
-	
+
+
 	/**
 	 * Subscribed users.
 	 *
@@ -129,7 +129,7 @@ public interface RestFeeds {
 	@Path("/sub/list/{" + USER + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	List<String> listSubs(@HeaderParam(HEADER_VERSION) long version, @PathParam(USER) String user);
-	
+
 	/**
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
@@ -140,7 +140,7 @@ public interface RestFeeds {
 	@PUT
 	@Path("/propagate")
 	void propagateMessage(Message message, @QueryParam(SECRET) String secret);
-	
+
 	/**
 	 * Deletes all user data in the domain.
 	 *
@@ -151,15 +151,16 @@ public interface RestFeeds {
 	@DELETE
 	@Path("/deleteData/{" + USER + "}")
 	void deleteUserData(@PathParam(USER) String user, @QueryParam(SECRET) String secret);
-	
+
 	/**
 	 * Replicates an operation from the primary server.
+	 *
 	 * @param operation operation to replicate
-	 * @param secret secret string authenticating servers
+	 * @param secret    secret string authenticating servers
 	 * @return 204, 403 if secret doesn't match, 409 if the operations' version is old
 	 */
 	@PUT
 	@Path("/replicateOperation")
 	void replicateOperation(FeedsOperation operation, @QueryParam(SECRET) String secret);
-	
+
 }

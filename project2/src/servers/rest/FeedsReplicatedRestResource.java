@@ -8,6 +8,7 @@ import clients.FeedsClientFactory;
 import jakarta.inject.Singleton;
 import servers.Server;
 import servers.resources.FeedsResource;
+import servers.resources.FeedsResourcePreconditions;
 import utils.JSON;
 import zookeeper.FeedsOperation;
 import zookeeper.FeedsOperationType;
@@ -21,84 +22,93 @@ import java.util.logging.Logger;
 public class FeedsReplicatedRestResource extends RestResource implements RestFeeds {
 
 	private static final Logger Log = Logger.getLogger(FeedsReplicatedRestResource.class.getName());
-	
+
 	protected Feeds feeds;
-	
+
 	public static final Object operationLock = new Object();
-	
+	private static final FeedsResourcePreconditions preconditions = new FeedsResourcePreconditions();
+
 	public FeedsReplicatedRestResource() {
 		feeds = new FeedsResource();
 	}
-	
+
 	@Override
 	public long postMessage(String user, String pwd, Message msg) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s?pwd=%s", user, pwd), msg);
 		}
+
 		synchronized (operationLock) {
+			fromJavaResult(preconditions.postMessage(user, pwd, msg));
 			long id = fromJavaResult(feeds.postMessage(user, pwd, msg));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.postMessage, List.of(user, pwd, JSON.encode(msg)));
 			return id;
 		}
 	}
-	
+
 	@Override
 	public void removeFromPersonalFeed(String user, long mid, String pwd) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s/%s?pwd=%s", user, mid, pwd));
 		}
 		synchronized (operationLock) {
+			fromJavaResult(preconditions.removeFromPersonalFeed(user, mid, pwd));
 			fromJavaResult(feeds.removeFromPersonalFeed(user, mid, pwd));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.removeFromPersonalFeed, List.of(user, String.valueOf(mid), pwd));
 		}
 	}
-	
+
 	@Override
 	public Message getMessage(long version, String user, long mid) {
 		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s/%s", user, mid));
 		}
+		fromJavaResult(preconditions.getMessage(user, mid));
 		return fromJavaResult(feeds.getMessage(user, mid));
 	}
-	
+
 	@Override
 	public List<Message> getMessages(long version, String user, long time) {
 		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/%s?time=%s", user, time));
 		}
+		fromJavaResult(preconditions.getMessages(user, time));
 		return fromJavaResult(feeds.getMessages(user, time));
 	}
-	
+
 	@Override
 	public void subUser(String user, String userSub, String pwd) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/%s/%s?pwd=%s", user, userSub, pwd));
 		}
 		synchronized (operationLock) {
+			fromJavaResult(preconditions.subUser(user, userSub, pwd));
 			fromJavaResult(feeds.subUser(user, userSub, pwd));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.subUser, List.of(user, userSub, pwd));
 		}
 	}
-	
+
 	@Override
 	public void unsubscribeUser(String user, String userSub, String pwd) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/%s/%s?pwd=%s", user, userSub, pwd));
 		}
 		synchronized (operationLock) {
+			fromJavaResult(preconditions.unsubscribeUser(user, userSub, pwd));
 			fromJavaResult(feeds.unsubscribeUser(user, userSub, pwd));
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.unsubscribeUser, List.of(user, userSub, pwd));
 		}
 	}
-	
+
 	@Override
 	public List<String> listSubs(long version, String user) {
 		if (version > ZookeeperReplicationManager.getVersion()) {
 			ZookeeperReplicationManager.redirectToPrimary(String.format("/sub/list/%s", user));
 		}
+		fromJavaResult(preconditions.listSubs(user));
 		return fromJavaResult(feeds.listSubs(user));
 	}
-	
+
 	@Override
 	public void propagateMessage(Message message, String secret) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
@@ -110,7 +120,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.propagateMessage, List.of(JSON.encode(message), secret));
 		}
 	}
-	
+
 	@Override
 	public void deleteUserData(String user, String secret) {
 		if (!ZookeeperReplicationManager.isPrimary()) {
@@ -122,7 +132,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			ZookeeperReplicationManager.writeToSecondaries(FeedsOperationType.deleteUserData, List.of(user, secret));
 		}
 	}
-	
+
 	@Override
 	public void replicateOperation(FeedsOperation operation, String secret) {
 		Log.info("replicateOperation : " + operation.type() + " " + operation.version());
@@ -137,7 +147,7 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 			executeOperation(operation);
 		}
 	}
-	
+
 	private void executeOperation(FeedsOperation operation) {
 		List<String> args = operation.args();
 		switch (operation.type()) {
@@ -151,9 +161,9 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
 		}
 		ZookeeperReplicationManager.setVersion(operation.version());
 	}
-	
+
 	public List<String> getState() {
 		return ((FeedsResource) feeds).dataStructuresToJson();
 	}
-	
+
 }

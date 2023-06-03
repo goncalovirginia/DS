@@ -8,11 +8,11 @@ import java.util.List;
 
 @WebService(serviceName = FeedsService.NAME, targetNamespace = FeedsService.NAMESPACE, endpointInterface = FeedsService.INTERFACE)
 public interface FeedsService {
-	
+
 	String NAME = "feeds";
 	String NAMESPACE = "http://sd2223";
 	String INTERFACE = "api.soap.FeedsService";
-	
+
 	/**
 	 * Posts a new message in the feed, associating it to the feed of the specific user.
 	 * A message should be identified before publish it, by assigning an ID.
@@ -28,7 +28,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	long postMessage(String user, String pwd, Message msg) throws FeedsException;
-	
+
 	/**
 	 * Removes the message identified by mid from the feed of user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -42,7 +42,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	void removeFromPersonalFeed(String user, long mid, String pwd) throws FeedsException;
-	
+
 	/**
 	 * Obtains the message with id from the feed of user (may be a remote user)
 	 *
@@ -53,7 +53,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	Message getMessage(String user, long mid) throws FeedsException;
-	
+
 	/**
 	 * Returns a list of all messages stored in the server for a given user newer than time
 	 * (note: may be a remote user)
@@ -65,7 +65,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	List<Message> getMessages(String user, long time) throws FeedsException;
-	
+
 	/**
 	 * Subscribe a user.
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -79,7 +79,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	void subUser(String user, String userSub, String pwd) throws FeedsException;
-	
+
 	/**
 	 * UnSubscribe a user
 	 * A user must contact the server of her domain directly (i.e., this operation should not be
@@ -93,7 +93,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	void unsubscribeUser(String user, String userSub, String pwd) throws FeedsException;
-	
+
 	/**
 	 * Subscribed users.
 	 *
@@ -102,7 +102,7 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	List<String> listSubs(String user) throws FeedsException;
-	
+
 	/**
 	 * Adds the propagated message to the subscriber's feed in the current domain.
 	 *
@@ -111,7 +111,7 @@ public interface FeedsService {
 	 * @return OK
 	 */
 	void propagateMessage(Message message, String secret) throws FeedsException;
-	
+
 	/**
 	 * Deletes all user data in the domain.
 	 *
@@ -120,5 +120,5 @@ public interface FeedsService {
 	 * @return 204
 	 */
 	void deleteUserData(String user, String secret) throws FeedsException;
-	
+
 }

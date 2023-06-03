@@ -8,12 +8,12 @@ import java.util.List;
 
 @Path(RestUsers.PATH)
 public interface RestUsers {
-	
+
 	String PWD = "pwd";
 	String NAME = "name";
 	String QUERY = "query";
 	String PATH = "/users";
-	
+
 	/**
 	 * Creates a new user in the local domain.
 	 *
@@ -26,7 +26,7 @@ public interface RestUsers {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	String createUser(User user);
-	
+
 	/**
 	 * Obtains the information on the user identified by name
 	 *
@@ -42,7 +42,7 @@ public interface RestUsers {
 	@Path("/{" + NAME + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	User getUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd);
-	
+
 	/**
 	 * Modifies the information of a user. Values of null in any field of the user will be
 	 * considered as if the the fields is not to be modified (the name cannot be modified).
@@ -61,7 +61,7 @@ public interface RestUsers {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	User updateUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd, User user);
-	
+
 	/**
 	 * Deletes the user identified by name
 	 *
@@ -77,7 +77,7 @@ public interface RestUsers {
 	@Path("/{" + NAME + "}")
 	@Produces(MediaType.APPLICATION_JSON)
 	User deleteUser(@PathParam(NAME) String name, @QueryParam(PWD) String pwd);
-	
+
 	/**
 	 * Returns the list of users for which the pattern is a substring of the name
 	 * (of the user), case-insensitive. The password of the users returned by the
@@ -90,5 +90,5 @@ public interface RestUsers {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	List<User> searchUsers(@QueryParam(QUERY) String pattern);
-	
+
 }
