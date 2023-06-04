@@ -34,7 +34,7 @@ public class ZookeeperReplicationManager {
     private static final AtomicLong versionCounter = new AtomicLong();
 
     private static final BlockingQueue<FeedsOperation> operationQueue = new LinkedBlockingQueue<>();
-    private static final Object replicationLock = new Object();
+    public static final Object replicationLock = new Object();
 
     private static final Thread operationReplicator = new Thread(() -> {
         while (true) {

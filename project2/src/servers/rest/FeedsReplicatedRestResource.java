@@ -125,11 +125,13 @@ public class FeedsReplicatedRestResource extends RestResource implements RestFee
     public void replicateOperation(FeedsOperation operation, String secret) {
         Log.info("replicateOperation : " + operation.type() + " " + operation.version());
 
-        fromJavaResult(preconditions.replicateOperation(operation, secret));
-        executeOperation(operation);
+        synchronized (ZookeeperReplicationManager.replicationLock) {
+            fromJavaResult(preconditions.replicateOperation(operation, secret));
+            executeOperation(operation);
+        }
     }
 
-    private synchronized void executeOperation(FeedsOperation operation) {
+    private void executeOperation(FeedsOperation operation) {
         List<String> args = operation.args();
         switch (operation.type()) {
             case postMessage -> feeds.postMessage(args.get(0), args.get(1), JSON.decode(args.get(2), Message.class));
