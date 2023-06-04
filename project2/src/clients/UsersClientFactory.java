@@ -8,20 +8,20 @@ import java.net.URI;
 
 public class UsersClientFactory {
 
-	private static final String REST = "/rest";
-	private static final String SOAP = "/soap";
+    private static final String REST = "/rest";
+    private static final String SOAP = "/soap";
 
-	public static Users get(URI serverURI) {
-		String uriString = serverURI.toString();
+    public static Users get(URI serverURI) {
+        String uriString = serverURI.toString();
 
-		if (uriString.endsWith(REST)) {
-			return new UsersRestClient(serverURI);
-		}
-		if (uriString.endsWith(SOAP)) {
-			return new UsersSoapClient(serverURI);
-		}
+        if (uriString.endsWith(REST)) {
+            return new UsersRestClient(serverURI);
+        }
+        if (uriString.endsWith(SOAP)) {
+            return new UsersSoapClient(serverURI);
+        }
 
-		throw new RuntimeException("Unknown service type..." + uriString);
-	}
+        throw new RuntimeException("Unknown service type..." + uriString);
+    }
 
 }

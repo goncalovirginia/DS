@@ -13,57 +13,57 @@ import java.net.URL;
 
 public abstract class SoapClient extends Client {
 
-	public static final String WSDL = "?wsdl";
+    public static final String WSDL = "?wsdl";
 
-	protected final URI serverURI;
+    protected final URI serverURI;
 
-	public SoapClient(URI serverURI) {
-		this.serverURI = serverURI;
-	}
+    public SoapClient(URI serverURI) {
+        this.serverURI = serverURI;
+    }
 
-	protected void setTimeouts(BindingProvider port) {
-		port.getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
-		port.getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, READ_TIMEOUT);
-	}
+    protected void setTimeouts(BindingProvider port) {
+        port.getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
+        port.getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, READ_TIMEOUT);
+    }
 
-	protected interface ThrowsSupplier<T> {
-		T get() throws Exception;
-	}
+    protected interface ThrowsSupplier<T> {
+        T get() throws Exception;
+    }
 
-	protected interface VoidThrowsSupplier {
-		void run() throws Exception;
-	}
+    protected interface VoidThrowsSupplier {
+        void run() throws Exception;
+    }
 
-	protected <T> Result<T> responseToResult(ThrowsSupplier<T> supplier) {
-		try {
-			return Result.ok(supplier.get());
-		} catch (UsersException | FeedsException e) {
-			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
-		} catch (Exception e) {
-			Log.info(e.getMessage());
-			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
-		}
-	}
+    protected <T> Result<T> responseToResult(ThrowsSupplier<T> supplier) {
+        try {
+            return Result.ok(supplier.get());
+        } catch (UsersException | FeedsException e) {
+            return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
+        } catch (Exception e) {
+            Log.info(e.getMessage());
+            return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	protected <T> Result<T> responseToResult(VoidThrowsSupplier supplier) {
-		try {
-			supplier.run();
-			return Result.ok();
-		} catch (UsersException | FeedsException e) {
-			return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
-		} catch (Exception e) {
-			Log.info(e.getMessage());
-			return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
-		}
-	}
+    protected <T> Result<T> responseToResult(VoidThrowsSupplier supplier) {
+        try {
+            supplier.run();
+            return Result.ok();
+        } catch (UsersException | FeedsException e) {
+            return Result.error(Result.ErrorCode.valueOf(e.getMessage()));
+        } catch (Exception e) {
+            Log.info(e.getMessage());
+            return Result.error(Result.ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	public static URL toURL(String url) {
-		try {
-			return new URL(url);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+    public static URL toURL(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }
